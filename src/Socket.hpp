@@ -74,7 +74,7 @@ class Socket {
   int getStatus() { return status; }
 
   //Method to receive data from the server
-  std::vector<char> receiveFromServer() {
+  std::vector<char> receiveFromClient() {
     struct sockaddr_storage socket_addr;
     socklen_t socket_addr_len = sizeof(socket_addr);
     int client_connection_fd;
@@ -86,7 +86,7 @@ class Socket {
     }  //if
 
     std::vector<char> buffer(5000);
-    int result = recv(client_connection_fd, buffer.data(), buffer.size(), 0);
+    recv(client_connection_fd, buffer.data(), buffer.size(), 0);
     buffer[9] = 0;
     for (size_t i = 0; i < buffer.size(); i++) {
       std::cout << buffer[i];
@@ -96,6 +96,19 @@ class Socket {
     // std::cout << "Server received: " << buffer << std::endl;
 
     return buffer;
+  }
+
+  void sendtoServer(std::vector<char> request){
+    std::cout << "Connecting to " << hostname << " on port " << port << "..." << std::endl;
+  
+  status = connect(socket_fd, host_info_list->ai_addr, host_info_list->ai_addrlen);
+  if (status == -1) {
+    std::cerr << "Error: cannot connect to socket" << std::endl;
+    std::cerr << "  (" << hostname << "," << port << ")" << std::endl;
+  } //if
+
+  const char *message = request.data();
+  send(socket_fd, message, strlen(message), 0);
   }
 
   ~Socket() {
