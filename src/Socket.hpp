@@ -12,12 +12,12 @@ class Socket {
   int socket_fd;
   struct addrinfo host_info;
   struct addrinfo * host_info_list;
-  std::string hostname;
-  std::string port;
+  const char * hostname;
+  const char * port;
 
  public:
   //Basic constructor for creating a socket with the specified hostname and port
-  Socket(std::string anotherHostName, std::string anotherPort) {
+  Socket(const char * anotherHostName, const char * anotherPort) {
     hostname = anotherHostName;
     port = anotherPort;
     makeSocket();
@@ -31,7 +31,7 @@ class Socket {
     host_info.ai_socktype = SOCK_STREAM;
     host_info.ai_flags = AI_PASSIVE;
 
-    status = getaddrinfo(hostname.c_str(), port.c_str(), &host_info, &host_info_list);
+    status = getaddrinfo(hostname, port, &host_info, &host_info_list);
 
     if (status != 0) {
       std::cerr << "Error: cannot get address info for host" << std::endl;
@@ -47,8 +47,6 @@ class Socket {
       std::cerr << "  (" << hostname << "," << port << ")" << std::endl;
       // return -1;
     }  //if
-
-    std::cout << status << "\n";
   }
 
   //Establishes a socket for the server side
@@ -90,7 +88,6 @@ class Socket {
     std::vector<char> buffer(5000);
     int result = recv(client_connection_fd, buffer.data(), buffer.size(), 0);
     buffer[9] = 0;
-    std::cout << result << "is the result\n";
     for (size_t i = 0; i < buffer.size(); i++) {
       std::cout << buffer[i];
     }
