@@ -22,6 +22,10 @@ int main()
     string file_contents;
 
     file_contents = readFileIntoString(filename);
-    cout << file_contents << endl;
+    // cout << file_contents << endl;
+    Parser newparser(file_contents);
+    newparser.parse_method();
+    newparser.parse_hostname();
+    newparser.parse_pathname();
 
 }

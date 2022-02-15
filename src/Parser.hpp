@@ -28,24 +28,28 @@ class Parser{
     std::auto_ptr<Request> parsed_message;
 
     public:
-    Parser(std::vector<char> raw_message){
-        message=std::string(raw_message.begin(),raw_message.end());
+    Parser(std::string raw_message){
+        message=raw_message;
         parsed_message= std::auto_ptr<Request>(new Request());
     }
 
     void parse_method(){
         parsed_message->method = message.substr(0,message.find(" "));
+        std::cout<<parsed_message->method<<std::endl;
     }
 
     void parse_pathname(){
-        size_t start = message.find("http://") +7;
-        size_t finish = message.find("/",start);
-        parsed_message->pathname = message.substr(start,finish);
+        size_t skip = message.find("http://") +7;
+        size_t start = message.find("/",skip);
+        size_t finish = message.find(" ",start);
+        parsed_message->pathname = message.substr(start,finish-start);
+        std::cout<<parsed_message->pathname<<std::endl;
     }
 
     void parse_hostname(){
-        size_t start = message.find("Host:")+6;
-        size_t finish = message.find(" ",start);
-        parsed_message->hostname = message.substr(start,finish);
+        size_t start = message.find("http://") +7;
+        size_t finish = message.find("/",start);
+        parsed_message->hostname = message.substr(start,finish-start);
+        std::cout<<parsed_message->hostname<<std::endl;
     }
 };
