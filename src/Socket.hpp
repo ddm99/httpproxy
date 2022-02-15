@@ -85,7 +85,7 @@ class Socket {
       // return -1;
     }  //if
 
-    std::vector<char> buffer(5000);
+    std::vector<char> buffer(1024*1024);
     recv(client_connection_fd, buffer.data(), buffer.size(), 0);
     buffer[9] = 0;
     for (size_t i = 0; i < buffer.size(); i++) {
