@@ -23,11 +23,13 @@ string readFileIntoString(const string & path) {
 }
 
 int main() {
-  string filename("req.txt");
-  string file_contents;
-
-  file_contents = readFileIntoString(filename);
-  // cout << file_contents << endl;
+  // string filename("req.txt");
+  // string file_contents;
+  // file_contents = readFileIntoString(filename);
+  Socket s(NULL,"4444");
+  s.makeSocket();
+  s.serverSocket();
+  std::vector<char> file_contents = s.receiveFromClient();
   Parser newparser(file_contents);
   newparser.parse_method();
   newparser.parse_hostname();
@@ -38,6 +40,10 @@ int main() {
   s1.makeSocket();
   //   std::string message = "GET /awesome.txt HTTP/1.1\r\nHost: rabihyounes.com\r\n\r\n";
   std::string newRequest = newparser.buildRequest();
+  std::cout<<"Parsed Request:\n";
+  std::cout<<newRequest;
   s1.sendtoServer(std::vector<char>(newRequest.begin(), newRequest.end()));
-  s1.readBuffer(s1.getSocketFd());
+  std::vector<char> buffer;
+  buffer =s1.readBuffer(s1.getSocketFd());
+  write(s.getClient_connection_fd(),buffer.data(),buffer.size());
 }

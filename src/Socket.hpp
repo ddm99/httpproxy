@@ -10,6 +10,7 @@
 class Socket {
   int status;
   int socket_fd;
+  int client_connection_fd;
   struct addrinfo host_info;
   struct addrinfo * host_info_list;
   const char * hostname;
@@ -73,11 +74,10 @@ class Socket {
 
   int getStatus() { return status; }
 
-  //Method to receive data from the server
+
   std::vector<char> receiveFromClient() {
     struct sockaddr_storage socket_addr;
     socklen_t socket_addr_len = sizeof(socket_addr);
-    int client_connection_fd;
     client_connection_fd =
         accept(socket_fd, (struct sockaddr *)&socket_addr, &socket_addr_len);
     if (client_connection_fd == -1) {
@@ -91,7 +91,6 @@ class Socket {
   std::vector<char> readBuffer(int client_fd){
     std::vector<char> buffer(1024 * 1024);
     recv(client_fd, buffer.data(), buffer.size(), 0);
-    buffer[9] = 0;
     for (size_t i = 0; i < buffer.size(); i++) {
       std::cout << buffer[i];
     }
@@ -114,6 +113,8 @@ class Socket {
   }
 
   int getSocketFd() { return socket_fd; }
+  
+  int getClient_connection_fd(){return client_connection_fd;}
 
   ~Socket() {
     freeaddrinfo(host_info_list);
