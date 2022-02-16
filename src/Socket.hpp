@@ -85,7 +85,7 @@ class Socket {
       // return -1;
     }  //if
 
-    std::vector<char> buffer(1024*1024);
+    std::vector<char> buffer(1024 * 1024);
     recv(client_connection_fd, buffer.data(), buffer.size(), 0);
     buffer[9] = 0;
     for (size_t i = 0; i < buffer.size(); i++) {
@@ -98,18 +98,21 @@ class Socket {
     return buffer;
   }
 
-  void sendtoServer(std::vector<char> request){
-    std::cout << "Connecting to " << hostname << " on port " << port << "..." << std::endl;
-  
-  status = connect(socket_fd, host_info_list->ai_addr, host_info_list->ai_addrlen);
-  if (status == -1) {
-    std::cerr << "Error: cannot connect to socket" << std::endl;
-    std::cerr << "  (" << hostname << "," << port << ")" << std::endl;
-  } //if
+  void sendtoServer(std::vector<char> request) {
+    std::cout << "Connecting to " << hostname << " on port " << port << "..."
+              << std::endl;
 
-  const char *message = request.data();
-  send(socket_fd, message, strlen(message), 0);
+    status = connect(socket_fd, host_info_list->ai_addr, host_info_list->ai_addrlen);
+    if (status == -1) {
+      std::cerr << "Error: cannot connect to socket" << std::endl;
+      std::cerr << "  (" << hostname << "," << port << ")" << std::endl;
+    }  //if
+
+    const char * message = request.data();
+    send(socket_fd, message, strlen(message), 0);
   }
+
+  int getSocketFd() { return socket_fd; }
 
   ~Socket() {
     freeaddrinfo(host_info_list);
