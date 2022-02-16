@@ -50,4 +50,8 @@ class Parser {
   }
 
   std::string getHostName() { return parsed_message->hostname; }
+
+  std::string buildRequest(){
+    std::
+  }
 };
