@@ -51,7 +51,10 @@ class Parser {
 
   std::string getHostName() { return parsed_message->hostname; }
 
-  std::string buildRequest(){
-    std::
+  std::string buildRequest() {
+    std::string result;
+    result = parsed_message->method + " " + parsed_message->pathname + " " +
+             "HTTP/1.1\r\n" + "Host: " + parsed_message->hostname + "\r\n\r\n";
+    return result;
   }
 };

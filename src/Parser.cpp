@@ -33,10 +33,11 @@ int main() {
   newparser.parse_hostname();
   newparser.parse_pathname();
   std::string port = "80";
-  // Socket s1(newparser.getHostName().c_str(), port.c_str());
-  Socket s1("rabihyounes.com", "80");
+  Socket s1(newparser.getHostName().c_str(), port.c_str());
+  //   Socket s1("rabihyounes.com", "80");
   s1.makeSocket();
-  std::string message = "GET /awesome.txt HTTP/1.1\r\nHost: rabihyounes.com\r\n\r\n";
-  s1.sendtoServer(std::vector<char>(message.begin(), message.end()));
+  //   std::string message = "GET /awesome.txt HTTP/1.1\r\nHost: rabihyounes.com\r\n\r\n";
+  std::string newRequest = newparser.buildRequest();
+  s1.sendtoServer(std::vector<char>(newRequest.begin(), newRequest.end()));
   s1.readBuffer(s1.getSocketFd());
 }
