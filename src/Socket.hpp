@@ -74,7 +74,6 @@ class Socket {
 
   int getStatus() { return status; }
 
-
   std::vector<char> receiveFromClient() {
     struct sockaddr_storage socket_addr;
     socklen_t socket_addr_len = sizeof(socket_addr);
@@ -88,7 +87,7 @@ class Socket {
     return readBuffer(client_connection_fd);
   }
 
-  std::vector<char> readBuffer(int client_fd){
+  std::vector<char> readBuffer(int client_fd) {
     std::vector<char> buffer(1024 * 1024);
     recv(client_fd, buffer.data(), buffer.size(), 0);
     for (size_t i = 0; i < buffer.size(); i++) {
@@ -113,8 +112,8 @@ class Socket {
   }
 
   int getSocketFd() { return socket_fd; }
-  
-  int getClient_connection_fd(){return client_connection_fd;}
+
+  int getClient_connection_fd() { return client_connection_fd; }
 
   ~Socket() {
     freeaddrinfo(host_info_list);

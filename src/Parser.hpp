@@ -25,7 +25,7 @@ class Parser {
 
  public:
   Parser(std::vector<char> raw_message) {
-    message=std::string(raw_message.begin(),raw_message.end());
+    message = std::string(raw_message.begin(), raw_message.end());
     parsed_message = std::auto_ptr<Request>(new Request());
   }
 
@@ -44,7 +44,13 @@ class Parser {
 
   void parse_hostname() {
     size_t start = message.find("http://") + 7;
-    size_t finish = message.find("/", start);
+    size_t finish = std::string::npos;
+    if (parsed_message->method == "CONNECT") {
+      finish = message.find(":", start);
+    }
+    else {
+      finish = message.find("/", start);
+    }
     parsed_message->hostname = message.substr(start, finish - start);
     // std::cout << parsed_message->hostname << std::endl;
   }
@@ -55,7 +61,7 @@ class Parser {
     std::string result;
     size_t start = message.find("Host");
     result = parsed_message->method + " " + parsed_message->pathname + " " +
-              "HTTP/1.1\r\n" + message.substr(start);
+             "HTTP/1.1\r\n" + message.substr(start);
     return result;
   }
 };
