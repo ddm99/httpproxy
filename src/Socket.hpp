@@ -83,18 +83,19 @@ class Socket {
     if (client_connection_fd == -1) {
       std::cerr << "Error: cannot accept connection on socket" << std::endl;
       // return -1;
-    }  //if
+    }
 
+    return readBuffer(client_connection_fd);
+  }
+
+  std::vector<char> readBuffer(int client_fd){
     std::vector<char> buffer(1024 * 1024);
-    recv(client_connection_fd, buffer.data(), buffer.size(), 0);
+    recv(client_fd, buffer.data(), buffer.size(), 0);
     buffer[9] = 0;
     for (size_t i = 0; i < buffer.size(); i++) {
       std::cout << buffer[i];
     }
     std::cout << std::endl;
-    // std::cout << buffer;
-    // std::cout << "Server received: " << buffer << std::endl;
-
     return buffer;
   }
 
