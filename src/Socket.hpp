@@ -89,7 +89,7 @@ class Socket {
 
   std::vector<char> readBuffer(int client_fd) {
     std::vector<char> buffer(1024 * 1024);
-    std::vector<char> error(1);
+    recv(client_fd, buffer.data(), buffer.size(), 0);
     for (size_t i = 0; i < buffer.size(); i++) {
       std::cout << buffer[i];
     }

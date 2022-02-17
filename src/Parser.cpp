@@ -29,8 +29,7 @@ int main() {
   // string filename("req.txt");
   // string file_contents;
   // file_contents = readFileIntoString(filename);
-  Socket s(NULL, "4444");
-  s.makeSocket();
+  Socket s(NULL, "5896");
   s.serverSocket();
   std::vector<char> file_contents = s.receiveFromClient();
   Parser newparser(file_contents);
@@ -40,11 +39,13 @@ int main() {
   std::string port = "443";
   std::cout << newparser.getHostName() << "\n";
   Socket s1(newparser.getHostName().c_str(), port.c_str());
-  s1.makeSocket();
   int server_fd = s1.getSocketFd();
   int client_fd = s.getClient_connection_fd();
+  std::cout << "S Status: " << s.getStatus() << s1.getStatus() << std::endl;
+  std::cout << "Before sending to server\n";
+  s.sendtoServer(file_contents);
+  std::cout << "Before 200OK response\n";
   send(client_fd, "HTTP/1.1 200 OK\r\n\r\n", 19, 0);
-  send(server_fd,file_contents.data(),file_contents.size(),0);
   int fdmax = (client_fd > server_fd) ? client_fd : server_fd;
   // std::string newRequest = newparser.buildRequest();
   // std::cout << "Parsed Request:\n";
@@ -52,18 +53,19 @@ int main() {
   // s1.sendtoServer(std::vector<char>(newRequest.begin(), newRequest.end()));
   fd_set fdset;
   std::vector<char> buffer;
-   while (true) {
+  while (true) {
+    std::cout << "Reaching the while true loop\n";
     FD_ZERO(&fdset);
     FD_SET(client_fd, &fdset);
     FD_SET(server_fd, &fdset);
     select(fdmax + 1, &fdset, NULL, NULL, NULL);
     if (FD_ISSET(client_fd, &fdset)) {
       buffer = s.readBuffer(client_fd);
-      send(server_fd, buffer.data(), buffer.size(), 0); 
+      send(server_fd, buffer.data(), buffer.size(), 0);
     }
     else if (FD_ISSET(server_fd, &fdset)) {
       buffer = s1.readBuffer(server_fd);
-      send(client_fd, buffer.data(), buffer.size(), 0); 
+      send(client_fd, buffer.data(), buffer.size(), 0);
     }
-  } 
+  }
 }
