@@ -89,7 +89,7 @@ class Socket {
 
   std::vector<char> readBuffer(int client_fd) {
     std::vector<char> buffer(1024 * 1024);
-    std::vector<char> error(1);
+    recv(client_fd,buffer.data(),buffer.size(),0);
     for (size_t i = 0; i < buffer.size(); i++) {
       std::cout << buffer[i];
     }
@@ -107,13 +107,15 @@ class Socket {
       std::cerr << "  (" << hostname << "," << port << ")" << std::endl;
     }  //if
 
-    const char * message = request.data();
-    send(socket_fd, message, strlen(message), 0);
+    // const char * message = request.data();
+    // send(socket_fd, message, strlen(message), 0);
   }
 
   int getSocketFd() { return socket_fd; }
 
   int getClient_connection_fd() { return client_connection_fd; }
+
+  struct addrinfo getHost_info(){return host_info;};
 
   ~Socket() {
     freeaddrinfo(host_info_list);
