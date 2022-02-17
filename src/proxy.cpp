@@ -7,10 +7,19 @@
 int main() {
   Socket s(NULL, "4444");
   s.serverSocket();
-  int client_fd = s.connect2Client();
-  Parser newparser(file_contents);
-  newparser.parseGetnPost();
-  std::cout << (newparser.getParsed_message())->hostname << "\n";
-  Socket s1((newparser.getParsed_message())->hostname.c_str(), (newparser.getParsed_message())->portnum.c_str());
-
+  while (true) {
+    int client_fd = s.connect2Client();
+    std::vector<char> buffer(65535);
+    s.read2Buffer(client_fd, buffer);
+    Parser newparser(buffer);
+    newparser.parseGetnPost();
+    Socket s1(newparser.getHostName().c_str(), newparser.getPortNum().c_str());
+    s1.connect2Server();
+    buffer = newparser.buildRequest();
+    int website_fd = s1.getSocketFd();
+    send(website_fd, buffer.data(), buffer.size(), 0);
+    s1.read2Buffer(website_fd, buffer);
+    send(client_fd, buffer.data(), buffer.size(), 0);
+  }
+  return 0;
 }

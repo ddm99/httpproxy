@@ -31,7 +31,7 @@ int main() {
   // file_contents = readFileIntoString(filename);
   Socket s(NULL, "4444");
   s.serverSocket();
-  std::vector<char> file_contents = s.receiveFromClient();
+  int file_contents = s.connect2Client();
   Parser newparser(file_contents);
   newparser.parse_method();
   newparser.parse_hostname();
@@ -47,41 +47,26 @@ int main() {
   // s1.sendtoServer(std::vector<char>(newRequest.begin(), newRequest.end()));
   int fdmax = (client_fd > server_fd) ? client_fd : server_fd;
   fd_set fdset;
-<<<<<<< HEAD
-  std::vector<char> buffer(65535);
-  while (true) {
-    std::cout << "loop start\n";
-=======
   // std::vector<char> buffer(65535);
   char buffer[65535];
-   while (true) {
-     std::cout<<"loop start\n";
->>>>>>> a45c5aaf5cd558fc6f05b77599303da512ec6728
+  while (true) {
+    std::cout << "loop start\n";
     FD_ZERO(&fdset);
     FD_SET(client_fd, &fdset);
     FD_SET(server_fd, &fdset);
     select(fdmax + 1, &fdset, NULL, NULL, NULL);
-    memset(&buffer,0,65535);
+    memset(&buffer, 0, 65535);
     if (FD_ISSET(client_fd, &fdset)) {
-<<<<<<< HEAD
-      buffer = s.readBuffer(client_fd);
-      send(server_fd, buffer.data(), buffer.size(), 0);
-    }
-    else if (FD_ISSET(server_fd, &fdset)) {
-      buffer = s1.readBuffer(server_fd);
-      send(client_fd, buffer.data(), buffer.size(), 0);
-=======
-      if(recv(client_fd,buffer,65535,0)==0){
+      if (recv(client_fd, buffer, 65535, 0) == 0) {
         break;
       }
-      send(server_fd, buffer, 65535, 0); 
+      send(server_fd, buffer, 65535, 0);
     }
     else if (FD_ISSET(server_fd, &fdset)) {
-      if(recv(server_fd,buffer,65535,0)==0){
+      if (recv(server_fd, buffer, 65535, 0) == 0) {
         break;
       }
-      send(client_fd, buffer, 65535, 0); 
->>>>>>> a45c5aaf5cd558fc6f05b77599303da512ec6728
+      send(client_fd, buffer, 65535, 0);
     }
     std::cout << "loop end\n";
   }

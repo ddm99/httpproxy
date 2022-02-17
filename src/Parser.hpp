@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <netdb.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -62,12 +63,16 @@ class Parser {
     //std::cout << parsed_message->hostname << std::endl;
   }
 
-  std::string buildRequest() {
+  std::vector<char> buildRequest() {
     std::string result;
     size_t start = message.find("Host");
+    assert(start != std::string::npos);
+    std::cout << "After assert\n";
     result = parsed_message->method + " " + parsed_message->pathname + " " +
              "HTTP/1.1\r\n" + message.substr(start);
-    return result;
+    std::cout << result << "is the actual request \n";
+    std::vector<char> newResult(result.begin(), result.end());
+    return newResult;
   }
 
   void parseGetnPost() {
@@ -75,6 +80,9 @@ class Parser {
     parse_hostname();
     parse_pathname();
   }
+
+  std::string getHostName() { return parsed_message->hostname; }
+  std::string getPortNum() { return parsed_message->portnum; }
 
   std::auto_ptr<Request> getParsed_message() { return parsed_message; }
 };
