@@ -39,30 +39,49 @@ int main() {
   Socket s1(newparser.getHostName().c_str(), "443");
   int server_fd = s1.getSocketFd();
   int client_fd = s.getClient_connection_fd();
-  //send(server_fd,file_contents.data(),file_contents.size(),0);
   s1.sendtoServer(file_contents);
-  //send(server_fd,file_contents.data(),file_contents.size(),0);
   send(client_fd, "HTTP/1.1 200 OK\r\n\r\n", 19, 0);
-  int fdmax = (client_fd > server_fd) ? client_fd : server_fd;
   // std::string newRequest = newparser.buildRequest();
   // std::cout << "Parsed Request:\n";
   // std::cout << newRequest;
   // s1.sendtoServer(std::vector<char>(newRequest.begin(), newRequest.end()));
+  int fdmax = (client_fd > server_fd) ? client_fd : server_fd;
   fd_set fdset;
+<<<<<<< HEAD
   std::vector<char> buffer(65535);
   while (true) {
     std::cout << "loop start\n";
+=======
+  // std::vector<char> buffer(65535);
+  char buffer[65535];
+   while (true) {
+     std::cout<<"loop start\n";
+>>>>>>> a45c5aaf5cd558fc6f05b77599303da512ec6728
     FD_ZERO(&fdset);
     FD_SET(client_fd, &fdset);
     FD_SET(server_fd, &fdset);
     select(fdmax + 1, &fdset, NULL, NULL, NULL);
+    memset(&buffer,0,65535);
     if (FD_ISSET(client_fd, &fdset)) {
+<<<<<<< HEAD
       buffer = s.readBuffer(client_fd);
       send(server_fd, buffer.data(), buffer.size(), 0);
     }
     else if (FD_ISSET(server_fd, &fdset)) {
       buffer = s1.readBuffer(server_fd);
       send(client_fd, buffer.data(), buffer.size(), 0);
+=======
+      if(recv(client_fd,buffer,65535,0)==0){
+        break;
+      }
+      send(server_fd, buffer, 65535, 0); 
+    }
+    else if (FD_ISSET(server_fd, &fdset)) {
+      if(recv(server_fd,buffer,65535,0)==0){
+        break;
+      }
+      send(client_fd, buffer, 65535, 0); 
+>>>>>>> a45c5aaf5cd558fc6f05b77599303da512ec6728
     }
     std::cout << "loop end\n";
   }
