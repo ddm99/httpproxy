@@ -107,13 +107,17 @@ class Socket {
       std::cerr << "  (" << hostname << "," << port << ")" << std::endl;
     }  //if
 
-    const char * message = request.data();
-    send(socket_fd, message, strlen(message), 0);
+    // const char * message = request.data();
+    // send(socket_fd, message, strlen(message), 0);
   }
 
   int getSocketFd() { return socket_fd; }
 
   int getClient_connection_fd() { return client_connection_fd; }
+
+  struct addrinfo getHost_info() {
+    return host_info;
+  };
 
   ~Socket() {
     freeaddrinfo(host_info_list);
