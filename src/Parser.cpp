@@ -1,5 +1,8 @@
 #include "Parser.hpp"
 
+#include <sys/select.h>
+#include <sys/types.h>
+
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -35,15 +38,32 @@ int main() {
   newparser.parse_hostname();
   newparser.parse_pathname();
   std::string port = "443";
+  std::cout << newparser.getHostName() << "\n";
   Socket s1(newparser.getHostName().c_str(), port.c_str());
-  //   Socket s1("rabihyounes.com", "80");
   s1.makeSocket();
-  //   std::string message = "GET /awesome.txt HTTP/1.1\r\nHost: rabihyounes.com\r\n\r\n";
-  std::string newRequest = newparser.buildRequest();
-  std::cout << "Parsed Request:\n";
-  std::cout << newRequest;
-  s1.sendtoServer(std::vector<char>(newRequest.begin(), newRequest.end()));
+  int server_fd = s1.getSocketFd();
+  int client_fd = s.getClient_connection_fd();
+  send(client_fd, "HTTP/1.1 200 OK\r\n\r\n", 19, 0);
+  send(server_fd,file_contents.data(),file_contents.size(),0);
+  int fdmax = (client_fd > server_fd) ? client_fd : server_fd;
+  // std::string newRequest = newparser.buildRequest();
+  // std::cout << "Parsed Request:\n";
+  // std::cout << newRequest;
+  // s1.sendtoServer(std::vector<char>(newRequest.begin(), newRequest.end()));
+  fd_set fdset;
   std::vector<char> buffer;
-  buffer = s1.readBuffer(s1.getSocketFd());
-  write(s.getClient_connection_fd(), buffer.data(), buffer.size());
+   while (true) {
+    FD_ZERO(&fdset);
+    FD_SET(client_fd, &fdset);
+    FD_SET(server_fd, &fdset);
+    select(fdmax + 1, &fdset, NULL, NULL, NULL);
+    if (FD_ISSET(client_fd, &fdset)) {
+      buffer = s.readBuffer(client_fd);
+      send(server_fd, buffer.data(), buffer.size(), 0); 
+    }
+    else if (FD_ISSET(server_fd, &fdset)) {
+      buffer = s1.readBuffer(server_fd);
+      send(client_fd, buffer.data(), buffer.size(), 0); 
+    }
+  } 
 }

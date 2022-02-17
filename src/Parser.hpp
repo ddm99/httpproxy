@@ -43,12 +43,14 @@ class Parser {
   }
 
   void parse_hostname() {
-    size_t start = message.find("http://") + 7;
+    size_t start = std::string::npos;
     size_t finish = std::string::npos;
     if (parsed_message->method == "CONNECT") {
+      start = message.find("www.");
       finish = message.find(":", start);
     }
     else {
+      start = message.find("http://") + 7;
       finish = message.find("/", start);
     }
     parsed_message->hostname = message.substr(start, finish - start);
