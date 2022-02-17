@@ -13,7 +13,12 @@ class Request {
   std::string method;
   std::string pathname;
   std::string hostname;
-  Request() : method(std::string()), pathname(std::string()), hostname(std::string()) {}
+  std::string portnum;
+  Request() :
+      method(std::string()),
+      pathname(std::string()),
+      hostname(std::string()),
+      portnum(std::string()) {}
 };
 
 class Response {};
@@ -27,6 +32,7 @@ class Parser {
   Parser(std::vector<char> raw_message) {
     message = std::string(raw_message.begin(), raw_message.end());
     parsed_message = std::auto_ptr<Request>(new Request());
+    parsed_message->portnum = "80";
   }
 
   void parse_method() {
@@ -45,13 +51,16 @@ class Parser {
   void parse_hostname() {
     size_t start = std::string::npos;
     size_t finish = std::string::npos;
-      start = message.find("Host:")+6;
+    start = message.find("Host:") + 6;
+    if (parsed_message->method == "CONNECT") {
       finish = message.find(":", start);
+    }
+    else {
+      finish = message.find("\r\n", start);
+    }
     parsed_message->hostname = message.substr(start, finish - start);
     //std::cout << parsed_message->hostname << std::endl;
   }
-
-  std::string getHostName() { return parsed_message->hostname; }
 
   std::string buildRequest() {
     std::string result;
@@ -60,4 +69,12 @@ class Parser {
              "HTTP/1.1\r\n" + message.substr(start);
     return result;
   }
+
+  void parseGetnPost() {
+    parse_method();
+    parse_hostname();
+    parse_pathname();
+  }
+
+  std::auto_ptr<Request> getParsed_message() { return parsed_message; }
 };

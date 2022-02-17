@@ -10,7 +10,6 @@
 class Socket {
   int status;
   int socket_fd;
-  int client_connection_fd;
   struct addrinfo host_info;
   struct addrinfo * host_info_list;
   const char * hostname;
@@ -74,24 +73,25 @@ class Socket {
 
   int getStatus() { return status; }
 
-  std::vector<char> receiveFromClient() {
+  int connect2Client() {
     struct sockaddr_storage socket_addr;
     socklen_t socket_addr_len = sizeof(socket_addr);
+    int client_connection_fd;
     client_connection_fd =
         accept(socket_fd, (struct sockaddr *)&socket_addr, &socket_addr_len);
     if (client_connection_fd == -1) {
       std::cerr << "Error: cannot accept connection on socket" << std::endl;
       // return -1;
     }
-
-    return readBuffer(client_connection_fd);
+  return client_connection_fd;
+    // return readBuffer(client_connection_fd);
   }
 
-  std::vector<char> readBuffer(int client_fd) {
-    std::vector<char> buffer(1024 * 1024);
-    recv(client_fd,buffer.data(),buffer.size(),0);
-    for (size_t i = 0; i < buffer.size(); i++) {
-      std::cout << buffer[i];
+  int read2Buffer(int client_fd,std::vector<char> *buffer) {
+    recv(client_fd,buffer->data(),buffer->size(),0);
+    for (size_t i = 0; i < buffer->size(); i++) {
+      std::cout << (**buffer);
+      ++buffer;
     }
     std::cout << std::endl;
     return buffer;
