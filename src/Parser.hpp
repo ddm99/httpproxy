@@ -2,11 +2,11 @@
 #include <netdb.h>
 #include <sys/socket.h>
 #include <unistd.h>
-
+#include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <memory>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -101,23 +101,31 @@ class ResponseParser {
     responseParsed = std::auto_ptr<Response>(new Response());
   }
 
-  size_t convertStringToNumber(std::string originalString) {
-    std::stringstream newStream(originalString);
-    size_t result;
-    newStream >> result;
-    return result;
+  bool isCachable(){
+    size_t status = responseMessage.find("200 OK");
+    if(status == std::string::npos){
+      return false;
+    }
+    return true;
   }
 
   void parseMaxAge() {
-    size_t start = responseMessage.find("max-age=");
+    size_t start = responseMessage.find("max-age=")+8;
     if (start == std::string::npos) {
       responseParsed->maxAge = 0;
     }
     else {
-      size_t finish = responseMessage.find('\r\n', start + 8);
+      size_t finish = responseMessage.find("\n", start);
       std::string tempMaxAge = responseMessage.substr(start, finish - start);
-      responseParsed->maxAge = convertStringToNumber(tempMaxAge);
+      responseParsed->maxAge = atoi(tempMaxAge.c_str());
     }
-    std::cout << responseParsed->maxAge << std::endl;
+    std::cout << "max age is " << responseParsed->maxAge << std::endl;
+  }
+
+  void parseResponseWrapper(){
+    if(isCachable()){
+      parseMaxAge();
+      char * time=ctime(&responseParsed->responseReceivedTime);
+    }
   }
 };
