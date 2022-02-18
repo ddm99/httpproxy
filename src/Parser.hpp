@@ -6,6 +6,7 @@
 #include <cstring>
 #include <iostream>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -21,8 +22,6 @@ class Request {
       hostname(std::string()),
       portnum(std::string()) {}
 };
-
-class Response {};
 
 class Parser {
  private:
@@ -82,4 +81,43 @@ class Parser {
   std::string getMethod() { return parsed_message->method; }
 
   std::auto_ptr<Request> getParsed_message() { return parsed_message; }
+};
+
+class Response {
+ public:
+  size_t maxAge;
+  std::string Etag;
+  time_t responseReceivedTime;
+  Response() : maxAge(0), Etag(std::string()), responseReceivedTime(time(0)) {}
+};
+
+class ResponseParser {
+  std::string responseMessage;
+  std::auto_ptr<Response> responseParsed;
+
+ public:
+  ResponseParser(std::vector<char> response) {
+    responseMessage = std::string(response.begin(), response.end());
+    responseParsed = std::auto_ptr<Response>(new Response());
+  }
+
+  size_t convertStringToNumber(std::string originalString) {
+    std::stringstream newStream(originalString);
+    size_t result;
+    newStream >> result;
+    return result;
+  }
+
+  void parseMaxAge() {
+    size_t start = responseMessage.find("max-age=");
+    if (start == std::string::npos) {
+      responseParsed->maxAge = 0;
+    }
+    else {
+      size_t finish = responseMessage.find('\r\n', start + 8);
+      std::string tempMaxAge = responseMessage.substr(start, finish - start);
+      responseParsed->maxAge = convertStringToNumber(tempMaxAge);
+    }
+    std::cout << responseParsed->maxAge << std::endl;
+  }
 };
