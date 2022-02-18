@@ -29,43 +29,45 @@ int main() {
   // string filename("req.txt");
   // string file_contents;
   // file_contents = readFileIntoString(filename);
-  Socket s(NULL, "5896");
+  Socket s(NULL, "4444");
   s.serverSocket();
-  std::vector<char> file_contents = s.receiveFromClient();
+  int file_contents = s.connect2Client();
   Parser newparser(file_contents);
   newparser.parse_method();
   newparser.parse_hostname();
-  newparser.parse_pathname();
-  std::string port = "443";
   std::cout << newparser.getHostName() << "\n";
-  Socket s1(newparser.getHostName().c_str(), port.c_str());
+  Socket s1(newparser.getHostName().c_str(), "443");
   int server_fd = s1.getSocketFd();
   int client_fd = s.getClient_connection_fd();
-  std::cout << "S Status: " << s.getStatus() << s1.getStatus() << std::endl;
-  std::cout << "Before sending to server\n";
-  s.sendtoServer(file_contents);
-  std::cout << "Before 200OK response\n";
+  s1.sendtoServer(file_contents);
   send(client_fd, "HTTP/1.1 200 OK\r\n\r\n", 19, 0);
-  int fdmax = (client_fd > server_fd) ? client_fd : server_fd;
   // std::string newRequest = newparser.buildRequest();
   // std::cout << "Parsed Request:\n";
   // std::cout << newRequest;
   // s1.sendtoServer(std::vector<char>(newRequest.begin(), newRequest.end()));
+  int fdmax = (client_fd > server_fd) ? client_fd : server_fd;
   fd_set fdset;
-  std::vector<char> buffer;
+  // std::vector<char> buffer(65535);
+  char buffer[65535];
   while (true) {
-    std::cout << "Reaching the while true loop\n";
+    std::cout << "loop start\n";
     FD_ZERO(&fdset);
     FD_SET(client_fd, &fdset);
     FD_SET(server_fd, &fdset);
     select(fdmax + 1, &fdset, NULL, NULL, NULL);
+    memset(&buffer, 0, 65535);
     if (FD_ISSET(client_fd, &fdset)) {
-      buffer = s.readBuffer(client_fd);
-      send(server_fd, buffer.data(), buffer.size(), 0);
+      if (recv(client_fd, buffer, 65535, 0) == 0) {
+        break;
+      }
+      send(server_fd, buffer, 65535, 0);
     }
     else if (FD_ISSET(server_fd, &fdset)) {
-      buffer = s1.readBuffer(server_fd);
-      send(client_fd, buffer.data(), buffer.size(), 0);
+      if (recv(server_fd, buffer, 65535, 0) == 0) {
+        break;
+      }
+      send(client_fd, buffer, 65535, 0);
     }
+    std::cout << "loop end\n";
   }
 }
