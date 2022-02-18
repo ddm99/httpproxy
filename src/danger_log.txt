@@ -1,3 +1,15 @@
 1. Transmission Error:
 Occurs when receiving large amount of data from the websites, the proxy may not rececive all the transmitted bytes in one go
 Our Solution: use a while loop to wait until no more transmission is made, meanwhile attach every message received in to a new buffer
+
+2.Cache Size
+Since we store the cached request into the memory, too many cached request may cause memory overflow
+Our solution: max cache size limited to 100 responses, new cache will replace the existing ones when the map is full
+
+3.Cache in multiprocessing
+multiple processes may want to write into the cache at the same time, causing data races
+Our solution: Using mutex lock to lock the map while one process is writing
+
+4. Invalid request format
+Browser constanly sending ill-formatted request which the proxy is not designed to handle
+Possible soution: config the browser to stop it from sending such request, set up rules in our proxy to ignore such requests
