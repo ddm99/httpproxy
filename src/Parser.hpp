@@ -66,11 +66,8 @@ class Parser {
   std::vector<char> buildRequest() {
     std::string result;
     size_t start = message.find("Host");
-    assert(start != std::string::npos);
-    std::cout << "After assert\n";
     result = parsed_message->method + " " + parsed_message->pathname + " " +
              "HTTP/1.1\r\n" + message.substr(start);
-    std::cout << result << "is the actual request \n";
     std::vector<char> newResult(result.begin(), result.end());
     return newResult;
   }
@@ -82,7 +79,7 @@ class Parser {
   }
 
   std::string getHostName() { return parsed_message->hostname; }
-  std::string getPortNum() { return parsed_message->portnum; }
+  std::string getMethod() { return parsed_message->method; }
 
   std::auto_ptr<Request> getParsed_message() { return parsed_message; }
 };
