@@ -29,7 +29,7 @@ int main() {
   string filename("response.txt");
   string file_contents;
   file_contents = readFileIntoString(filename);
-  std::vector<char> input(file_contents.begin(),file_contents.end());
+  std::vector<char> input(file_contents.begin(), file_contents.end());
   ResponseParser newparser(input);
   newparser.parseResponseWrapper();
 }

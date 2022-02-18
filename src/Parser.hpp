@@ -2,6 +2,7 @@
 #include <netdb.h>
 #include <sys/socket.h>
 #include <unistd.h>
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -10,18 +11,8 @@
 #include <string>
 #include <vector>
 
-class Request {
- public:
-  std::string method;
-  std::string pathname;
-  std::string hostname;
-  std::string portnum;
-  Request() :
-      method(std::string()),
-      pathname(std::string()),
-      hostname(std::string()),
-      portnum(std::string()) {}
-};
+#include "Request.hpp"
+#include "Response.hpp"
 
 class Parser {
  private:
@@ -71,24 +62,18 @@ class Parser {
     return newResult;
   }
 
+  //Wrapper function for parsing user's request
   void parseGetnPost() {
     parse_method();
     parse_hostname();
     parse_pathname();
+    parsed_message->url = parsed_message->hostname + parsed_message->pathname;
   }
 
+  //Get Methods
+  std::string getUrl() { return parsed_message->url; }
   std::string getHostName() { return parsed_message->hostname; }
   std::string getMethod() { return parsed_message->method; }
-
-  std::auto_ptr<Request> getParsed_message() { return parsed_message; }
-};
-
-class Response {
- public:
-  size_t maxAge;
-  std::string Etag;
-  time_t responseReceivedTime;
-  Response() : maxAge(0), Etag(std::string()), responseReceivedTime(time(0)) {}
 };
 
 class ResponseParser {
@@ -101,16 +86,16 @@ class ResponseParser {
     responseParsed = std::auto_ptr<Response>(new Response());
   }
 
-  bool isCachable(){
+  bool isCachable() {
     size_t status = responseMessage.find("200 OK");
-    if(status == std::string::npos){
+    if (status == std::string::npos) {
       return false;
     }
     return true;
   }
 
   void parseMaxAge() {
-    size_t start = responseMessage.find("max-age=")+8;
+    size_t start = responseMessage.find("max-age=") + 8;
     if (start == std::string::npos) {
       responseParsed->maxAge = 0;
     }
@@ -122,10 +107,22 @@ class ResponseParser {
     std::cout << "max age is " << responseParsed->maxAge << std::endl;
   }
 
-  void parseResponseWrapper(){
-    if(isCachable()){
+  void parseETag() {
+    size_t start = responseMessage.find("Etag:") + 7;
+    if (start == std::string::npos + 7) {
+      responseParsed->Etag = "";
+    }
+    else {
+      size_t finish = responseMessage.find("\n", start);
+      responseParsed->Etag = responseMessage.substr(start, finish - start - 2);
+    }
+    std::cout << "Etag is " << responseParsed->Etag.c_str() << std::endl;
+  }
+
+  void parseResponseWrapper() {
+    if (isCachable()) {
       parseMaxAge();
-      char * time=ctime(&responseParsed->responseReceivedTime);
+      parseETag();
     }
   }
 };

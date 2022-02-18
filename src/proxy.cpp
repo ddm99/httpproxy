@@ -57,6 +57,8 @@ void use_get(Parser & newparser, int client_fd) {
     len = s1.read2Buffer(website_fd, buffer);
     newbuffer.insert(newbuffer.end(), buffer.begin(), buffer.begin() + len);
   }
+  ResponseParser rParser(newbuffer);
+  rParser.parseResponseWrapper();
   send(client_fd, newbuffer.data(), newbuffer.size(), 0);
 }
 
@@ -69,6 +71,7 @@ int main() {
     s.read2Buffer(client_fd, buffer);
     Parser newparser(buffer);
     newparser.parseGetnPost();
+    std::cout << "$$$$$$$$$$$Url is: " << newparser.getUrl() << std::endl;
     if (newparser.getMethod() == "CONNECT") {
       use_connect(newparser, client_fd);
     }
@@ -76,21 +79,5 @@ int main() {
       use_get(newparser, client_fd);
     }
   }
-
-  std::string temp = ""
-                     "
-                         Connecting to example.com on port 80... HTTP /
-                         1.1 200 OK Content -
-                     Encoding : gzip Age : 497049 Cache -
-                                Control : max - age = 604800 Content - Type : text / html;
-  charset = UTF - 8 Date : Fri,
-  18 Feb 2022 21 : 04 : 52 GMT Etag : "3147526947+gzip" Expires : Fri,
-  25 Feb 2022 21 : 04 : 52 GMT Last - Modified : Thu,
-  17 Oct 2019 07 : 18 : 26 GMT Server : ECS(agb / A445) Vary : Accept - Encoding X -
-                                                               Cache : HIT Content -
-                                                                       Length : 648
-
-                                                                       ""
-                                                                       "
-                                                                       return 0;
+  return 0;
 }
