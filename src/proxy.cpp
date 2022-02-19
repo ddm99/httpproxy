@@ -52,7 +52,7 @@ void use_get(Parser & newparser, int client_fd, Cache & cacheStorage) {
   std::vector<char> buffer(BUFSIZ);
   buffer = newparser.buildRequest();
   int website_fd = s1.getSocketFd();
-  if ((cachedResponse != NULL)&&(!cachedResponse->needRevalidation)) {
+  if ((cachedResponse != NULL) && (!cachedResponse->needRevalidation)) {
     send(client_fd, cachedResponse->content.data(), cachedResponse->content.size(), 0);
     std::cout << "returning a cached response" << std::endl;
     std::string returnedResponse(cachedResponse->content.begin(),
@@ -61,9 +61,6 @@ void use_get(Parser & newparser, int client_fd, Cache & cacheStorage) {
               << "cached response end" << std::endl;
   }
   else {
-    if(cachedResponse != NULL){
-
-    }
     send(website_fd, buffer.data(), BUFSIZ, 0);
     std::vector<char> newbuffer;
     int len = 1;
@@ -74,8 +71,17 @@ void use_get(Parser & newparser, int client_fd, Cache & cacheStorage) {
     ResponseParser rParser(newbuffer);
     rParser.parseResponseWrapper();
     if (rParser.isCachable()) {
-      rParser.updateCache(newparser.getUrl(), &cacheStorage);
-      std::cout << "inserting into cache" << std::endl;
+      Response newResponse = rParser.getResponse();
+      if (cachedResponse != NULL) {
+        cacheStorage.updateValue(newparser.getUrl(), newResponse);
+        std::cout << "Updated the response value for url: " << newparser.getUrl()
+                  << std::endl;
+      }
+      else {
+        cacheStorage.insertElement(newparser.getUrl(), newResponse);
+        std::cout << "Inserting new response for url: " << newparser.getUrl()
+                  << std::endl;
+      }
     }
     send(client_fd, newbuffer.data(), newbuffer.size(), 0);
   }
@@ -92,7 +98,7 @@ int main() {
     Parser newparser(buffer);
     newparser.parseGetnPost();
     if (newparser.getMethod() == "CONNECT") {
-      //use_connect(newparser, client_fd);
+      use_connect(newparser, client_fd);
     }
     else if ((newparser.getMethod() == "GET") || (newparser.getMethod() == "POST")) {
       use_get(newparser, client_fd, cacheStorage);

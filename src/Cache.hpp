@@ -9,7 +9,7 @@ class Cache {
  public:
   Cache() { cacheStorage.insert(std::make_pair(std::string(), Response())); }
 
-  void insertElement(std::string url, Response  urlResponse) {
+  void insertElement(std::string url, Response urlResponse) {
     cacheStorage.insert(std::make_pair(url, urlResponse));
   }
 
@@ -19,9 +19,12 @@ class Cache {
         (difftime(current.responseReceivedTime, now)) > current.maxAge;
   }
 
+  void updateValue(std::string url, Response & newResponse) {
+    cacheStorage[url] = newResponse;
+  }
+
   Response * lookupElement(std::string urlToFind) {
-    std::map<std::string, Response>::iterator result =
-        cacheStorage.find(urlToFind);
+    std::map<std::string, Response>::iterator result = cacheStorage.find(urlToFind);
     if (result != cacheStorage.end()) {
       updateRevalidation(result->second);
       return &(result->second);

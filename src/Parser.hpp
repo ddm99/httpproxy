@@ -127,8 +127,8 @@ class ResponseParser {
     }
   }
 
-  void updateCache(std::string url,Cache *cacheStorage){
-    Response inserted = *responseParsed;
-    cacheStorage->insertElement(url, inserted);//will 
+  Response getResponse() {
+    Response result = *responseParsed;
+    return result;
   }
 };
