@@ -84,6 +84,7 @@ class ResponseParser {
   ResponseParser(std::vector<char> response) {
     responseMessage = std::string(response.begin(), response.end());
     responseParsed = std::auto_ptr<Response>(new Response());
+    responseParsed->content = response;
   }
 
   bool isCachable() {
@@ -124,5 +125,10 @@ class ResponseParser {
       parseMaxAge();
       parseETag();
     }
+  }
+
+  void updateCache(std::string url,Cache *cacheStorage){
+    Response inserted = *responseParsed;
+    cacheStorage->insertElement(url, inserted);//will 
   }
 };

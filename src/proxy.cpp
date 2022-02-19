@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <limits>
 
+#include "Cache.hpp"
 #include "Parser.hpp"
 #include "Socket.hpp"
 
@@ -44,12 +45,19 @@ void use_connect(Parser & newparser, int client_fd) {
   }
 }
 
-void use_get(Parser & newparser, int client_fd) {
+void use_get(Parser & newparser, int client_fd,Cache & cacheStorage) {
+  Response * cachedResponse = cacheStorage.lookupElement(newparser.getUrl());
   Socket s1(newparser.getHostName().c_str(), "80");
   s1.connect2Server();
   std::vector<char> buffer(BUFSIZ);
   buffer = newparser.buildRequest();
   int website_fd = s1.getSocketFd();
+  if(cachedResponse!= NULL){
+    send(client_fd, cachedResponse->content.data(), cachedResponse->content.size(), 0);
+    std::cout<<"returning a cached response"<<std::endl;
+    std::string returnedResponse(cachedResponse->content.begin(),cachedResponse->content.end());
+    std::cout<<returnedResponse<<"\n"<<"cached response end"<<std::endl;
+  }else{
   send(website_fd, buffer.data(), BUFSIZ, 0);
   std::vector<char> newbuffer;
   int len = 1;
@@ -59,24 +67,29 @@ void use_get(Parser & newparser, int client_fd) {
   }
   ResponseParser rParser(newbuffer);
   rParser.parseResponseWrapper();
+  if(rParser.isCachable()){
+    rParser.updateCache(newparser.getUrl(),&cacheStorage);
+    std::cout<<"inserting into cache"<<std::endl;
+  }
   send(client_fd, newbuffer.data(), newbuffer.size(), 0);
+  }
 }
 
 int main() {
   Socket s(NULL, "4444");
   s.serverSocket();
+  Cache cacheStorage;
   while (true) {
     int client_fd = s.connect2Client();
     std::vector<char> buffer(BUFSIZ);
     s.read2Buffer(client_fd, buffer);
     Parser newparser(buffer);
     newparser.parseGetnPost();
-    std::cout << "$$$$$$$$$$$Url is: " << newparser.getUrl() << std::endl;
     if (newparser.getMethod() == "CONNECT") {
-      use_connect(newparser, client_fd);
+      //use_connect(newparser, client_fd);
     }
     else if ((newparser.getMethod() == "GET") || (newparser.getMethod() == "POST")) {
-      use_get(newparser, client_fd);
+      use_get(newparser, client_fd, cacheStorage);
     }
   }
   return 0;

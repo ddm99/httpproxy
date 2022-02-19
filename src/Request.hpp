@@ -1,3 +1,5 @@
+#ifndef REQUEST_H
+#define REQUEST_H
 #include <cstdio>
 #include <cstring>
 #include <string>
@@ -16,3 +18,4 @@ class Request {
       portnum(std::string()),
       url(std::string()) {}
 };
+#endif

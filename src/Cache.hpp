@@ -1,15 +1,15 @@
-#include <unordered_map>
+#include <map>
 
 #include "Request.hpp"
 #include "Response.hpp"
 
 class Cache {
-  std::unordered_map<std::string, Response> cacheStorage;
+  std::map<std::string, Response> cacheStorage;
 
  public:
   Cache() { cacheStorage.insert(std::make_pair(std::string(), Response())); }
 
-  void insertElement(std::string url, Response & urlResponse) {
+  void insertElement(std::string url, Response  urlResponse) {
     cacheStorage.insert(std::make_pair(url, urlResponse));
   }
 
@@ -20,7 +20,7 @@ class Cache {
   }
 
   Response * lookupElement(std::string urlToFind) {
-    std::unordered_map<std::string, Response>::iterator result =
+    std::map<std::string, Response>::iterator result =
         cacheStorage.find(urlToFind);
     if (result != cacheStorage.end()) {
       updateRevalidation(result->second);
