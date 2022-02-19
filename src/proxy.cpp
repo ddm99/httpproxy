@@ -45,33 +45,39 @@ void use_connect(Parser & newparser, int client_fd) {
   }
 }
 
-void use_get(Parser & newparser, int client_fd,Cache & cacheStorage) {
+void use_get(Parser & newparser, int client_fd, Cache & cacheStorage) {
   Response * cachedResponse = cacheStorage.lookupElement(newparser.getUrl());
   Socket s1(newparser.getHostName().c_str(), "80");
   s1.connect2Server();
   std::vector<char> buffer(BUFSIZ);
   buffer = newparser.buildRequest();
   int website_fd = s1.getSocketFd();
-  if(cachedResponse!= NULL){
+  if ((cachedResponse != NULL)&&(!cachedResponse->needRevalidation)) {
     send(client_fd, cachedResponse->content.data(), cachedResponse->content.size(), 0);
-    std::cout<<"returning a cached response"<<std::endl;
-    std::string returnedResponse(cachedResponse->content.begin(),cachedResponse->content.end());
-    std::cout<<returnedResponse<<"\n"<<"cached response end"<<std::endl;
-  }else{
-  send(website_fd, buffer.data(), BUFSIZ, 0);
-  std::vector<char> newbuffer;
-  int len = 1;
-  while (len > 0) {
-    len = s1.read2Buffer(website_fd, buffer);
-    newbuffer.insert(newbuffer.end(), buffer.begin(), buffer.begin() + len);
+    std::cout << "returning a cached response" << std::endl;
+    std::string returnedResponse(cachedResponse->content.begin(),
+                                 cachedResponse->content.end());
+    std::cout << returnedResponse << "\n"
+              << "cached response end" << std::endl;
   }
-  ResponseParser rParser(newbuffer);
-  rParser.parseResponseWrapper();
-  if(rParser.isCachable()){
-    rParser.updateCache(newparser.getUrl(),&cacheStorage);
-    std::cout<<"inserting into cache"<<std::endl;
-  }
-  send(client_fd, newbuffer.data(), newbuffer.size(), 0);
+  else {
+    if(cachedResponse != NULL){
+
+    }
+    send(website_fd, buffer.data(), BUFSIZ, 0);
+    std::vector<char> newbuffer;
+    int len = 1;
+    while (len > 0) {
+      len = s1.read2Buffer(website_fd, buffer);
+      newbuffer.insert(newbuffer.end(), buffer.begin(), buffer.begin() + len);
+    }
+    ResponseParser rParser(newbuffer);
+    rParser.parseResponseWrapper();
+    if (rParser.isCachable()) {
+      rParser.updateCache(newparser.getUrl(), &cacheStorage);
+      std::cout << "inserting into cache" << std::endl;
+    }
+    send(client_fd, newbuffer.data(), newbuffer.size(), 0);
   }
 }
 
