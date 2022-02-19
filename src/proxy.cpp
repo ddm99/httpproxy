@@ -3,10 +3,11 @@
 
 #include <cstdio>
 #include <limits>
-
+#include <thread> 
 #include "Cache.hpp"
 #include "Parser.hpp"
 #include "Socket.hpp"
+#define BUFSIZE 65536
 
 void use_connect(Parser & newparser, int client_fd) {
   Socket s1(newparser.getHostName().c_str(), "443");
@@ -21,9 +22,9 @@ void use_connect(Parser & newparser, int client_fd) {
     FD_SET(client_fd, &fdset);
     FD_SET(website_fd, &fdset);
     select(fdmax + 1, &fdset, NULL, NULL, NULL);
-    std::vector<char> buffer(BUFSIZ);
+    std::vector<char> buffer(BUFSIZE);
     if (FD_ISSET(client_fd, &fdset)) {
-      int len = recv(client_fd, buffer.data(), BUFSIZ, 0);
+      int len = recv(client_fd, buffer.data(), BUFSIZE, 0);
       if (len <= 0) {
         return;
       }
@@ -33,7 +34,7 @@ void use_connect(Parser & newparser, int client_fd) {
       }
     }
     else if (FD_ISSET(website_fd, &fdset)) {
-      int len = recv(website_fd, buffer.data(), BUFSIZ, 0);
+      int len = recv(website_fd, buffer.data(), BUFSIZE, 0);
       if (len <= 0) {
         return;
       }
@@ -49,7 +50,7 @@ void use_get(Parser & newparser, int client_fd, Cache & cacheStorage) {
   Response * cachedResponse = cacheStorage.lookupElement(newparser.getUrl());
   Socket s1(newparser.getHostName().c_str(), "80");
   s1.connect2Server();
-  std::vector<char> buffer(BUFSIZ);
+  std::vector<char> buffer(BUFSIZE);
   buffer = newparser.buildRequest();
   int website_fd = s1.getSocketFd();
   if ((cachedResponse != NULL) && (!cachedResponse->needRevalidation)) {
@@ -61,7 +62,7 @@ void use_get(Parser & newparser, int client_fd, Cache & cacheStorage) {
               << "cached response end" << std::endl;
   }
   else {
-    send(website_fd, buffer.data(), BUFSIZ, 0);
+    send(website_fd, buffer.data(), BUFSIZE, 0);
     std::vector<char> newbuffer;
     int len = 1;
     while (len > 0) {
@@ -87,22 +88,52 @@ void use_get(Parser & newparser, int client_fd, Cache & cacheStorage) {
   }
 }
 
+void use_post(Parser & newparser, int client_fd) {
+  Socket s1(newparser.getHostName().c_str(), "80");
+  s1.connect2Server();
+  std::vector<char> buffer(BUFSIZE);
+  buffer = newparser.buildRequest();
+  int website_fd = s1.getSocketFd();
+  send(website_fd, buffer.data(), BUFSIZE, 0);
+  std::vector<char> newbuffer;
+  int len = 1;
+  while (len > 0) {
+    len = s1.read2Buffer(website_fd, buffer);
+    newbuffer.insert(newbuffer.end(), buffer.begin(), buffer.begin() + len);
+  }
+  send(client_fd, newbuffer.data(), newbuffer.size(), 0);
+}
+
+void threadConnections(Socket & s,int client_fd, Cache & cacheStorage){
+  std::vector<char> buffer(BUFSIZE);
+    s.read2Buffer(client_fd, buffer);
+    Parser newparser(buffer);
+    if(newparser.parseGetnPost()){
+    if (newparser.getMethod() == "CONNECT") {
+      use_connect(newparser, client_fd);
+    }
+    else if (newparser.getMethod() == "GET") {
+      use_get(newparser, client_fd, cacheStorage);
+    }
+    else if (newparser.getMethod() == "POST"){
+      use_post(newparser,client_fd);
+    }
+    }
+}
+
+void test(){
+  std::cout<<"hello world"<<std::endl;
+}
+
 int main() {
   Socket s(NULL, "4444");
   s.serverSocket();
   Cache cacheStorage;
   while (true) {
     int client_fd = s.connect2Client();
-    std::vector<char> buffer(BUFSIZ);
-    s.read2Buffer(client_fd, buffer);
-    Parser newparser(buffer);
-    newparser.parseGetnPost();
-    if (newparser.getMethod() == "CONNECT") {
-      use_connect(newparser, client_fd);
-    }
-    else if ((newparser.getMethod() == "GET") || (newparser.getMethod() == "POST")) {
-      use_get(newparser, client_fd, cacheStorage);
-    }
+    // threadConnections(s,client_fd,cacheStorage);
+    std::thread connection (&threadConnections,s,client_fd,cacheStorage);
+    connection.detach();
   }
   return 0;
 }

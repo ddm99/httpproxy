@@ -17,12 +17,12 @@
 class Parser {
  private:
   std::string message;
-  std::auto_ptr<Request> parsed_message;
+  std::unique_ptr<Request> parsed_message;
 
  public:
   Parser(std::vector<char> raw_message) {
     message = std::string(raw_message.begin(), raw_message.end());
-    parsed_message = std::auto_ptr<Request>(new Request());
+    parsed_message = std::unique_ptr<Request>(new Request());
     parsed_message->portnum = "80";
   }
 
@@ -63,11 +63,15 @@ class Parser {
   }
 
   //Wrapper function for parsing user's request
-  void parseGetnPost() {
+  bool parseGetnPost() {
     parse_method();
     parse_hostname();
     parse_pathname();
     parsed_message->url = parsed_message->hostname + parsed_message->pathname;
+    if(parsed_message->hostname.find("mozilla")!= std::string::npos){
+      return false;
+    }
+    return true;
   }
 
   //Get Methods
@@ -78,12 +82,12 @@ class Parser {
 
 class ResponseParser {
   std::string responseMessage;
-  std::auto_ptr<Response> responseParsed;
+  std::unique_ptr<Response> responseParsed;
 
  public:
   ResponseParser(std::vector<char> response) {
     responseMessage = std::string(response.begin(), response.end());
-    responseParsed = std::auto_ptr<Response>(new Response());
+    responseParsed = std::unique_ptr<Response>(new Response());
     responseParsed->content = response;
   }
 
