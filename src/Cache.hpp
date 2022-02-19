@@ -2,7 +2,8 @@
 
 #include "Request.hpp"
 #include "Response.hpp"
-
+#include <mutex>
+std::mutex thlock;
 class Cache {
   std::map<std::string, Response> cacheStorage;
 
@@ -10,7 +11,9 @@ class Cache {
   Cache() { cacheStorage.insert(std::make_pair(std::string(), Response())); }
 
   void insertElement(std::string url, Response urlResponse) {
+    thlock.lock();
     cacheStorage.insert(std::make_pair(url, urlResponse));
+    thlock.unlock();
   }
 
   void updateRevalidation(Response & current) {
@@ -20,7 +23,9 @@ class Cache {
   }
 
   void updateValue(std::string url, Response & newResponse) {
+    thlock.lock();
     cacheStorage[url] = newResponse;
+    thlock.unlock();
   }
 
   Response * lookupElement(std::string urlToFind) {

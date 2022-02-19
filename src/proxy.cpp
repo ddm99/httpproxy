@@ -104,16 +104,16 @@ void use_post(Parser & newparser, int client_fd) {
   send(client_fd, newbuffer.data(), newbuffer.size(), 0);
 }
 
-void threadConnections(Socket & s,int client_fd, Cache & cacheStorage){
+void threadConnections(int client_fd, Cache *cacheStorage){
   std::vector<char> buffer(BUFSIZE);
-    s.read2Buffer(client_fd, buffer);
+    recv(client_fd, buffer.data(), BUFSIZE, 0);
     Parser newparser(buffer);
     if(newparser.parseGetnPost()){
     if (newparser.getMethod() == "CONNECT") {
       use_connect(newparser, client_fd);
     }
     else if (newparser.getMethod() == "GET") {
-      use_get(newparser, client_fd, cacheStorage);
+      use_get(newparser, client_fd, *cacheStorage);
     }
     else if (newparser.getMethod() == "POST"){
       use_post(newparser,client_fd);
@@ -121,9 +121,6 @@ void threadConnections(Socket & s,int client_fd, Cache & cacheStorage){
     }
 }
 
-void test(){
-  std::cout<<"hello world"<<std::endl;
-}
 
 int main() {
   Socket s(NULL, "4444");
@@ -131,8 +128,8 @@ int main() {
   Cache cacheStorage;
   while (true) {
     int client_fd = s.connect2Client();
-    // threadConnections(s,client_fd,cacheStorage);
-    std::thread connection (&threadConnections,s,client_fd,cacheStorage);
+  //  threadConnections(client_fd,&cacheStorage);
+    std::thread connection (&threadConnections,client_fd,&cacheStorage);
     connection.detach();
   }
   return 0;
