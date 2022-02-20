@@ -1,8 +1,10 @@
+#include <cstdio>
+#include <cstdlib>
 #include <map>
+#include <mutex>
 
 #include "Request.hpp"
 #include "Response.hpp"
-#include <mutex>
 std::mutex thlock;
 class Cache {
   std::map<std::string, Response> cacheStorage;
@@ -12,6 +14,14 @@ class Cache {
 
   void insertElement(std::string url, Response urlResponse) {
     thlock.lock();
+    if (cacheStorage.size() == 100) {
+      size_t position = rand() % cacheStorage.size();
+      std::map<std::string, Response>::iterator newIt = cacheStorage.begin();
+      for (size_t i = 0; i < position; ++i) {
+        ++newIt;
+      }
+      cacheStorage.erase(newIt);
+    }
     cacheStorage.insert(std::make_pair(url, urlResponse));
     thlock.unlock();
   }
