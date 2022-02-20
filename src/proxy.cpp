@@ -6,9 +6,9 @@
 #include <thread>
 
 #include "Cache.hpp"
+#include "Log.hpp"
 #include "Parser.hpp"
 #include "Socket.hpp"
-#include "Log.hpp"
 #define BUFSIZE 65536
 Log newLog;
 void use_connect(Parser & newparser, int client_fd, size_t id) {
@@ -111,7 +111,7 @@ void threadConnections(int client_fd, Cache * cacheStorage, size_t id) {
   std::vector<char> buffer(BUFSIZE);
   recv(client_fd, buffer.data(), BUFSIZE, 0);
   Parser newparser(buffer);
-  
+
   if (newparser.parseGetnPost()) {
     if (newparser.getMethod() == "CONNECT") {
       use_connect(newparser, client_fd, id);
@@ -130,10 +130,11 @@ int main() {
   s.serverSocket();
   Cache cacheStorage;
   size_t ids = 0;
+  std::pair<int, std::string> clientInfo;
   while (true) {
-    int client_fd = s.connect2Client();
+    clientInfo = s.connect2Client();
     //  threadConnections(client_fd,&cacheStorage);
-    std::thread connection(&threadConnections, client_fd, &cacheStorage, ids);
+    std::thread connection(&threadConnections, clientInfo.first, &cacheStorage, ids);
     connection.detach();
     ids++;
   }

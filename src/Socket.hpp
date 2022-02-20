@@ -1,3 +1,4 @@
+#include <arpa/inet.h>
 #include <netdb.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -6,7 +7,6 @@
 #include <iostream>
 #include <string>
 #include <vector>
-
 class Socket {
   int status;
   int socket_fd;
@@ -73,7 +73,15 @@ class Socket {
 
   int getStatus() { return status; }
 
-  int connect2Client() {
+  std::string getIP(struct sockaddr * sa) {
+    char ipChar[INET_ADDRSTRLEN];
+    struct sockaddr_in * ipAddressStruct = (struct sockaddr_in *)sa;
+    inet_ntop(AF_INET, &(ipAddressStruct->sin_addr), ipChar, INET_ADDRSTRLEN);
+    std::string result = std::string(ipChar);
+    return result;
+  }
+
+  std::pair<int, std::string> connect2Client() {
     struct sockaddr_storage socket_addr;
     socklen_t socket_addr_len = sizeof(socket_addr);
     int client_connection_fd;
@@ -83,8 +91,9 @@ class Socket {
       std::cerr << "Error: cannot accept connection on socket" << std::endl;
       // return -1;
     }
-    return client_connection_fd;
-    // return readBuffer(client_connection_fd);
+    std::pair<int, std::string> result =
+        std::make_pair(client_connection_fd, getIP((struct sockaddr *)&socket_addr));
+    return result;
   }
 
   size_t read2Buffer(int client_fd, std::vector<char> & buffer) {
