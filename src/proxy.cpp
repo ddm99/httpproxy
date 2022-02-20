@@ -8,8 +8,9 @@
 #include "Cache.hpp"
 #include "Parser.hpp"
 #include "Socket.hpp"
+#include "Log.hpp"
 #define BUFSIZE 65536
-
+Log newLog;
 void use_connect(Parser & newparser, int client_fd, size_t id) {
   Socket s1(newparser.getHostName().c_str(), "443");
   s1.connect2Server();
@@ -109,8 +110,8 @@ void use_post(Parser & newparser, int client_fd, size_t id) {
 void threadConnections(int client_fd, Cache * cacheStorage, size_t id) {
   std::vector<char> buffer(BUFSIZE);
   recv(client_fd, buffer.data(), BUFSIZE, 0);
-  //first log here after receiving from client.
   Parser newparser(buffer);
+  
   if (newparser.parseGetnPost()) {
     if (newparser.getMethod() == "CONNECT") {
       use_connect(newparser, client_fd, id);

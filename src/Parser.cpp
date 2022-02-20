@@ -18,6 +18,7 @@ using std::string;
 
 int main() {
   Log newLog;
-  newLog.writeToFile("");
+  std::string timenow = asctime(newLog.getGMtime(0));
+  newLog.writeToFile(timenow);
   return 0;
 }
