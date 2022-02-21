@@ -51,12 +51,18 @@ return std::string(host_info->ai_addr);
 
   void writeBeforeSend(size_t id, std::string request, std::string url) {
     std::string beforeSend =
-        std::to_string(id) + ": " + " Requesting " + request + " from " + url;
+        std::to_string(id) + ": " + "Requesting " + request + " from " + url+"\n";
     writeToFile(beforeSend);
   }
-  void writeAfterSend(size_t id, std::string response, std::string url) {
+
+  void writeAfterReceive(size_t id, std::string response, std::string url) {
     std::string afterSend =
-        std::to_string(id) + ": " + " Received " + response + " from " + url;
+        std::to_string(id) + ": " + "Received " + response + " from " + url+"\n";
     writeToFile(afterSend);
+  }
+
+  void writeTunnelClose(size_t id){
+    std::string toWrite = std::to_string(id) + ": "+"Tunnel closed\n";
+    writeToFile(toWrite);
   }
 };

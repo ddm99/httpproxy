@@ -142,6 +142,12 @@ class ResponseParser {
     }
   }
 
+  std::string getFirstline() {
+    size_t finish = responseMessage.find("\n");
+    std::string returnString = responseMessage.substr(0, finish - 1);
+    return returnString;
+  }
+
   Response getResponse() {
     Response result = *responseParsed;
     return result;

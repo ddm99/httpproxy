@@ -28,6 +28,7 @@ void use_connect(Parser & newparser, int client_fd, size_t id) {
     if (FD_ISSET(client_fd, &fdset)) {
       int len = recv(client_fd, buffer.data(), BUFSIZE, 0);
       if (len <= 0) {
+        newLog.writeTunnelClose(id);
         return;
       }
       while (len > 0) {
@@ -38,6 +39,7 @@ void use_connect(Parser & newparser, int client_fd, size_t id) {
     else if (FD_ISSET(website_fd, &fdset)) {
       int len = recv(website_fd, buffer.data(), BUFSIZE, 0);
       if (len <= 0) {
+        newLog.writeTunnelClose(id);
         return;
       }
       while (len > 0) {
@@ -65,15 +67,19 @@ void use_get(Parser & newparser, int client_fd, Cache & cacheStorage, size_t id)
               << "cached response end" << std::endl;
   }
   else {
+    newLog.writeBeforeSend(id, newparser.getFirstline(), newparser.getHostName());
     send(website_fd, buffer.data(), BUFSIZE, 0);
     std::vector<char> newbuffer;
     int len = 1;
     while (len > 0) {
       len = s1.read2Buffer(website_fd, buffer);
+      if(len != 0){
       newbuffer.insert(newbuffer.end(), buffer.begin(), buffer.begin() + len);
+      }
     }
     ResponseParser rParser(newbuffer);
     rParser.parseResponseWrapper();
+     newLog.writeAfterReceive(id, rParser.getFirstline(), newparser.getHostName());
     if (rParser.isCachable()) {
       Response newResponse = rParser.getResponse();
       if (cachedResponse != NULL) {
@@ -99,13 +105,17 @@ void use_post(Parser & newparser, int client_fd, size_t id) {
   int website_fd = s1.getSocketFd();
   newLog.writeBeforeSend(id, newparser.getFirstline(), newparser.getHostName());
   send(website_fd, buffer.data(), BUFSIZE, 0);
-  newLog.writeAfterSend(id, newparser.getFirstline(), newparser.getHostName());
   std::vector<char> newbuffer;
   int len = 1;
   while (len > 0) {
     len = s1.read2Buffer(website_fd, buffer);
+    if(len != 0){
     newbuffer.insert(newbuffer.end(), buffer.begin(), buffer.begin() + len);
+    }
   }
+  ResponseParser rParser(newbuffer);
+  rParser.parseResponseWrapper();
+  newLog.writeAfterReceive(id, rParser.getFirstline(), newparser.getHostName());
   send(client_fd, newbuffer.data(), newbuffer.size(), 0);
 }
 
