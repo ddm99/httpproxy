@@ -68,16 +68,16 @@ class Parser {
     parse_hostname();
     parse_pathname();
     parsed_message->url = parsed_message->hostname + parsed_message->pathname;
-    if(parsed_message->hostname.find("mozilla")!= std::string::npos){
+    if (parsed_message->hostname.find("mozilla") != std::string::npos) {
       return false;
     }
     return true;
   }
 
   //Get Methods
-  std::string getFirstline(){
+  std::string getFirstline() {
     size_t finish = message.find("\n");
-    std::string returnString = message.substr(0,finish);
+    std::string returnString = message.substr(0, finish - 1);
     return returnString;
   }
   std::string getUrl() { return parsed_message->url; }

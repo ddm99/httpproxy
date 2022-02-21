@@ -97,7 +97,9 @@ void use_post(Parser & newparser, int client_fd, size_t id) {
   std::vector<char> buffer(BUFSIZE);
   buffer = newparser.buildRequest();
   int website_fd = s1.getSocketFd();
+  newLog.writeBeforeSend(id, newparser.getFirstline(), newparser.getHostName());
   send(website_fd, buffer.data(), BUFSIZE, 0);
+  newLog.writeAfterSend(id, newparser.getFirstline(), newparser.getHostName());
   std::vector<char> newbuffer;
   int len = 1;
   while (len > 0) {
@@ -107,11 +109,14 @@ void use_post(Parser & newparser, int client_fd, size_t id) {
   send(client_fd, newbuffer.data(), newbuffer.size(), 0);
 }
 
-void threadConnections(int client_fd, Cache * cacheStorage, size_t id) {
+void threadConnections(int client_fd,
+                       Cache * cacheStorage,
+                       size_t id,
+                       std::string ipAddress) {
   std::vector<char> buffer(BUFSIZE);
   recv(client_fd, buffer.data(), BUFSIZE, 0);
   Parser newparser(buffer);
-
+  newLog.writeRequest(id, newparser.getFirstline(), ipAddress);
   if (newparser.parseGetnPost()) {
     if (newparser.getMethod() == "CONNECT") {
       use_connect(newparser, client_fd, id);
@@ -125,6 +130,13 @@ void threadConnections(int client_fd, Cache * cacheStorage, size_t id) {
   }
 }
 
+/*
+Socket.h return IP addres
+we have id
+first log: received REQUEST from USER IP @ TIME
+second log: 
+*/
+
 int main() {
   Socket s(NULL, "4444");
   s.serverSocket();
@@ -134,7 +146,8 @@ int main() {
   while (true) {
     clientInfo = s.connect2Client();
     //  threadConnections(client_fd,&cacheStorage);
-    std::thread connection(&threadConnections, clientInfo.first, &cacheStorage, ids);
+    std::thread connection(
+        &threadConnections, clientInfo.first, &cacheStorage, ids, clientInfo.second);
     connection.detach();
     ids++;
   }
