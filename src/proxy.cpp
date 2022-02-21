@@ -58,7 +58,7 @@ void use_get(Parser & newparser, int client_fd, Cache & cacheStorage, size_t id)
   buffer = newparser.buildRequest();
   int website_fd = s1.getSocketFd();
   if ((cachedResponse != NULL) && (!cachedResponse->needRevalidation)) {
-    //
+    newLog.writeinCacheValid(id);
     send(client_fd, cachedResponse->content.data(), cachedResponse->content.size(), 0);
     std::cout << "returning a cached response" << std::endl;
     std::string returnedResponse(cachedResponse->content.begin(),
@@ -73,7 +73,7 @@ void use_get(Parser & newparser, int client_fd, Cache & cacheStorage, size_t id)
     int len = 1;
     while (len > 0) {
       len = s1.read2Buffer(website_fd, buffer);
-      if(len != 0){
+      if(len > 0){
       newbuffer.insert(newbuffer.end(), buffer.begin(), buffer.begin() + len);
       }
     }
@@ -83,15 +83,22 @@ void use_get(Parser & newparser, int client_fd, Cache & cacheStorage, size_t id)
     if (rParser.isCachable()) {
       Response newResponse = rParser.getResponse();
       if (cachedResponse != NULL) {
+        // if(cachedResponse->needRevalidation){
+          newLog.writeinCacheExpired(id,(cachedResponse->responseReceivedTime+(int)cachedResponse->maxAge));
+        // }
         cacheStorage.updateValue(newparser.getUrl(), newResponse);
         std::cout << "Updated the response value for url: " << newparser.getUrl()
                   << std::endl;
       }
       else {
+        newLog.writeNotinCache(id);
         cacheStorage.insertElement(newparser.getUrl(), newResponse);
         std::cout << "Inserting new response for url: " << newparser.getUrl()
                   << std::endl;
       }
+      newLog.writeCached(id,newResponse.responseReceivedTime+newResponse.maxAge);
+    }else{
+      newLog.writeNotCacheable(id);
     }
     send(client_fd, newbuffer.data(), newbuffer.size(), 0);
   }
@@ -109,7 +116,7 @@ void use_post(Parser & newparser, int client_fd, size_t id) {
   int len = 1;
   while (len > 0) {
     len = s1.read2Buffer(website_fd, buffer);
-    if(len != 0){
+    if(len > 0){
     newbuffer.insert(newbuffer.end(), buffer.begin(), buffer.begin() + len);
     }
   }

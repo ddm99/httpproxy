@@ -1,14 +1,5 @@
-0: CONNECT mozilla.cloudflare-dns.com:443 HTTP/1.1 from 127.0.0.1@Mon Feb 21 00:31:33 2022
-1: CONNECT incoming.telemetry.mozilla.org:443 HTTP/1.1 from 127.0.0.1@Mon Feb 21 00:31:36 2022
-2: CONNECT leetcode.com:443 HTTP/1.1 from 127.0.0.1@Mon Feb 21 00:31:36 2022
-3: CONNECT extend.vimeocdn.com:443 HTTP/1.1 from 127.0.0.1@Mon Feb 21 00:31:36 2022
-4: CONNECT assets.leetcode.com:443 HTTP/1.1 from 127.0.0.1@Mon Feb 21 00:31:37 2022
-5: CONNECT www.recaptcha.net:443 HTTP/1.1 from 127.0.0.1@Mon Feb 21 00:31:37 2022
-6: CONNECT www.gstatic.com:443 HTTP/1.1 from 127.0.0.1@Mon Feb 21 00:31:38 2022
-7: CONNECT www.google-analytics.com:443 HTTP/1.1 from 127.0.0.1@Mon Feb 21 00:31:38 2022
-8: CONNECT stats.g.doubleclick.net:443 HTTP/1.1 from 127.0.0.1@Mon Feb 21 00:31:38 2022
-9: CONNECT assets.giocdn.com:443 HTTP/1.1 from 127.0.0.1@Mon Feb 21 00:31:38 2022
-10: CONNECT fonts.gstatic.com:443 HTTP/1.1 from 127.0.0.1@Mon Feb 21 00:31:39 2022
-11: CONNECT api.growingio.com:443 HTTP/1.1 from 127.0.0.1@Mon Feb 21 00:31:39 2022
-12: CONNECT js-agent.newrelic.com:443 HTTP/1.1 from 127.0.0.1@Mon Feb 21 00:31:39 2022
-13: CONNECT bam-cell.nr-data.net:443 HTTP/1.1 from 127.0.0.1@Mon Feb 21 00:31:39 2022
+0: GET http://www.example.com/ HTTP/1.1 from 127.0.0.1@Mon Feb 21 15:11:06 2022
+0: Requesting GET http://www.example.com/ HTTP/1.1 from www.example.com
+0: Received HTTP/1.1 200 OK from www.example.com
+0: not in cache
+0: cached, expires at Mon Feb 28 15:11:06 2022
