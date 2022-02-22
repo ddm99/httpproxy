@@ -28,6 +28,8 @@ class Log {
     if (ofs.is_open()) {
     ofs << content;
     ofs.close();
+    }else{
+      throw throw(std::);
     }
     loglock.unlock();
   }
