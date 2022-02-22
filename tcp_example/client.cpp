@@ -51,7 +51,9 @@ int main(int argc, char *argv[])
 
   const char *message = "hi there!";
   send(socket_fd, message, strlen(message), 0);
-
+  int buffer;
+  recv(socket_fd,&buffer,512,0);
+  printf("received %d\n",buffer);
   freeaddrinfo(host_info_list);
   close(socket_fd);
 
