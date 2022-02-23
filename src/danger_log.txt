@@ -1,3 +1,6 @@
+#####Exception Guarantee#########
+Basic Exception Guarantee
+#####Danger Log###########
 1. Transmission Error:
 Occurs when receiving large amount of data from the websites, the proxy may not rececive all the transmitted bytes in one go
 Our Solution: use a while loop to wait until no more transmission is made, meanwhile attach every message received in to a new buffer
@@ -13,3 +16,23 @@ Our solution: Using mutex lock to lock the map while one process is writing
 4. Invalid request format
 Browser constanly sending ill-formatted request which the proxy is not designed to handle
 Possible soution: config the browser to stop it from sending such request, set up rules in our proxy to ignore such requests
+
+5. Closing Tunnel
+Many https site will keep the tunnel active even after finished loading. Doing this can make our proxy spawn too many threads without exiting them
+Our Solution: close the tunnel automatically after a certain amount of time has passed, thereby exiting the thread created
+
+6. Malicious Users
+Malicious user can create numerous fake request to our proxy in an attempt to overload the server
+Possible Solution: use re-captcha service to identify real user from the fake ones
+
+7. Badly formatted request
+Request that contains special characters that the browser sent which when parsed will return illegible hostname which causes error when seting up socket
+Our Solution: ignore such cases by actively filtering out the request sent by Browser
+
+8. Buffer size error
+Response received may be greater than the maximum size that a vector can hold, which causes buffer overflow. Or the response could be empty, manipulating it can cause M_Range error.
+Our solution: check the number of bytes received, if it's 0, we will not try to manipulate it. if it is about go exceeds the maximum size, we discard the response.
+
+9. Error when opening file 
+Log file may fail to open, which makes the subsequent action with log impossible
+Our Solution: use is_open to detect if the log file being opened, if not, we will throw an exception which will be caught by the code which called log and retry
