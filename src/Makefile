@@ -3,4 +3,4 @@ proxy: proxy.cpp
 
 .PHONY: clean
 clean:
-	rm -f *~ $(PROGS) $(OBJS)
+	rm -f *~ proxy *.o
