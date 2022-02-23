@@ -12,41 +12,60 @@
 #define BUFSIZE 65536
 Log newLog;
 void use_connect(Parser & newparser, int client_fd, size_t id) {
-  Socket s1(newparser.getHostName().c_str(), "443");
-  s1.connect2Server();
-  int website_fd = s1.getSocketFd();
-  std::string success = "HTTP/1.1 200 OK\r\n\r\n";
-  send(client_fd, success.c_str(), success.size(), 0);
-  int fdmax = (client_fd > website_fd) ? client_fd : website_fd;
-  fd_set fdset;
-  while (true) {
-    FD_ZERO(&fdset);
-    FD_SET(client_fd, &fdset);
-    FD_SET(website_fd, &fdset);
-    select(fdmax + 1, &fdset, NULL, NULL, NULL);
-    std::vector<char> buffer(BUFSIZE);
-    if (FD_ISSET(client_fd, &fdset)) {
-      int len = recv(client_fd, buffer.data(), BUFSIZE, 0);
-      if (len <= 0) {
-        newLog.writeTunnelClose(id);
-        return;
+  try {
+    Socket s1(newparser.getHostName().c_str(), "443");
+    s1.connect2Server();
+    int website_fd = s1.getSocketFd();
+    std::string success = "HTTP/1.1 200 OK\r\n\r\n";
+    send(client_fd, success.c_str(), success.size(), 0);
+    int fdmax = (client_fd > website_fd) ? client_fd : website_fd;
+    fd_set fdset;
+    while (true) {
+      FD_ZERO(&fdset);
+      FD_SET(client_fd, &fdset);
+      FD_SET(website_fd, &fdset);
+      select(fdmax + 1, &fdset, NULL, NULL, NULL);
+      std::vector<char> buffer(BUFSIZE);
+      if (FD_ISSET(client_fd, &fdset)) {
+        int len = recv(client_fd, buffer.data(), BUFSIZE, 0);
+        if (len <= 0) {
+          try {
+            newLog.writeTunnelClose(id);
+          }
+          catch (std::iostream::failure & e) {
+            std::cerr << e.what();
+            return;
+          }
+          return;
+        }
+        while (len > 0) {
+          int sendLength = send(website_fd, buffer.data(), len, 0);
+          len = len - sendLength;
+        }
       }
-      while (len > 0) {
-        int sendLength = send(website_fd, buffer.data(), len, 0);
-        len = len - sendLength;
+      else if (FD_ISSET(website_fd, &fdset)) {
+        int len = recv(website_fd, buffer.data(), BUFSIZE, 0);
+        if (len <= 0) {
+          try {
+            newLog.writeTunnelClose(id);
+          }
+          catch (std::iostream::failure & e) {
+            std::cerr << e.what();
+            return;
+          }
+
+          return;
+        }
+        while (len > 0) {
+          int sendLength = send(client_fd, buffer.data(), len, 0);
+          len = len - sendLength;
+        }
       }
     }
-    else if (FD_ISSET(website_fd, &fdset)) {
-      int len = recv(website_fd, buffer.data(), BUFSIZE, 0);
-      if (len <= 0) {
-        newLog.writeTunnelClose(id);
-        return;
-      }
-      while (len > 0) {
-        int sendLength = send(client_fd, buffer.data(), len, 0);
-        len = len - sendLength;
-      }
-    }
+  }
+  catch (std::runtime_error & e) {
+    std::cerr << e.what();
+    return;
   }
 }
 
@@ -58,7 +77,13 @@ void use_get(Parser & newparser, int client_fd, Cache & cacheStorage, size_t id)
   buffer = newparser.buildRequest();
   int website_fd = s1.getSocketFd();
   if ((cachedResponse != NULL) && (!cachedResponse->needRevalidation)) {
-    newLog.writeinCacheValid(id);
+    try {
+      newLog.writeinCacheValid(id);
+    }
+    catch (std::iostream::failure & e) {
+      std::cerr << e.what();
+      return;
+    }
     send(client_fd, cachedResponse->content.data(), cachedResponse->content.size(), 0);
     std::cout << "returning a cached response" << std::endl;
     std::string returnedResponse(cachedResponse->content.begin(),
@@ -67,38 +92,77 @@ void use_get(Parser & newparser, int client_fd, Cache & cacheStorage, size_t id)
               << "cached response end" << std::endl;
   }
   else {
-    newLog.writeBeforeSend(id, newparser.getFirstline(), newparser.getHostName());
+    try {
+      newLog.writeBeforeSend(id, newparser.getFirstline(), newparser.getHostName());
+    }
+    catch (std::iostream::failure & e) {
+      std::cerr << e.what();
+      return;
+    }
+
     send(website_fd, buffer.data(), BUFSIZE, 0);
     std::vector<char> newbuffer;
     int len = 1;
     while (len > 0) {
       len = s1.read2Buffer(website_fd, buffer);
-      if(len > 0){
-      newbuffer.insert(newbuffer.end(), buffer.begin(), buffer.begin() + len);
+      if (len > 0) {
+        newbuffer.insert(newbuffer.end(), buffer.begin(), buffer.begin() + len);
       }
     }
     ResponseParser rParser(newbuffer);
     rParser.parseResponseWrapper();
-     newLog.writeAfterReceive(id, rParser.getFirstline(), newparser.getHostName());
+    try {
+      newLog.writeAfterReceive(id, rParser.getFirstline(), newparser.getHostName());
+    }
+    catch (std::iostream::failure & e) {
+      std::cerr << e.what();
+      return;
+    }
+
     if (rParser.isCachable()) {
       Response newResponse = rParser.getResponse();
       if (cachedResponse != NULL) {
-        // if(cachedResponse->needRevalidation){
-          newLog.writeinCacheExpired(id,(cachedResponse->responseReceivedTime+(int)cachedResponse->maxAge));
-        // }
+        try {
+          newLog.writeinCacheExpired(
+              id, (cachedResponse->responseReceivedTime + (int)cachedResponse->maxAge));
+        }
+        catch (std::iostream::failure & e) {
+          std::cerr << e.what();
+          return;
+        }
         cacheStorage.updateValue(newparser.getUrl(), newResponse);
         std::cout << "Updated the response value for url: " << newparser.getUrl()
                   << std::endl;
       }
       else {
-        newLog.writeNotinCache(id);
+        try {
+          newLog.writeNotinCache(id);
+        }
+        catch (std::iostream::failure & e) {
+          std::cerr << e.what();
+          return;
+        }
+
         cacheStorage.insertElement(newparser.getUrl(), newResponse);
         std::cout << "Inserting new response for url: " << newparser.getUrl()
                   << std::endl;
       }
-      newLog.writeCached(id,newResponse.responseReceivedTime+newResponse.maxAge);
-    }else{
-      newLog.writeNotCacheable(id);
+      try {
+        newLog.writeCached(id, newResponse.responseReceivedTime + newResponse.maxAge);
+      }
+      catch (std::iostream::failure & e) {
+        std::cerr << e.what();
+        return;
+      }
+    }
+    else {
+      try {
+        newLog.writeNotCacheable(id);
+      }
+      catch (std::iostream::failure & e) {
+        std::cerr << e.what();
+        return;
+      }
     }
     send(client_fd, newbuffer.data(), newbuffer.size(), 0);
   }
@@ -110,19 +174,32 @@ void use_post(Parser & newparser, int client_fd, size_t id) {
   std::vector<char> buffer(BUFSIZE);
   buffer = newparser.buildRequest();
   int website_fd = s1.getSocketFd();
-  newLog.writeBeforeSend(id, newparser.getFirstline(), newparser.getHostName());
+  try {
+    newLog.writeBeforeSend(id, newparser.getFirstline(), newparser.getHostName());
+  }
+  catch (std::iostream::failure & e) {
+    std::cerr << e.what();
+    return;
+  }
+
   send(website_fd, buffer.data(), BUFSIZE, 0);
   std::vector<char> newbuffer;
   int len = 1;
   while (len > 0) {
     len = s1.read2Buffer(website_fd, buffer);
-    if(len > 0){
-    newbuffer.insert(newbuffer.end(), buffer.begin(), buffer.begin() + len);
+    if (len > 0) {
+      newbuffer.insert(newbuffer.end(), buffer.begin(), buffer.begin() + len);
     }
   }
   ResponseParser rParser(newbuffer);
   rParser.parseResponseWrapper();
-  newLog.writeAfterReceive(id, rParser.getFirstline(), newparser.getHostName());
+  try {
+    newLog.writeAfterReceive(id, rParser.getFirstline(), newparser.getHostName());
+  }
+  catch (std::iostream::failure & e) {
+    std::cerr << e.what();
+    return;
+  }
   send(client_fd, newbuffer.data(), newbuffer.size(), 0);
 }
 
@@ -133,7 +210,13 @@ void threadConnections(int client_fd,
   std::vector<char> buffer(BUFSIZE);
   recv(client_fd, buffer.data(), BUFSIZE, 0);
   Parser newparser(buffer);
-  newLog.writeRequest(id, newparser.getFirstline(), ipAddress);
+  try {
+    newLog.writeRequest(id, newparser.getFirstline(), ipAddress);
+  }
+  catch (std::iostream::failure & e) {
+    std::cout << e.what();
+    return;
+  }
   if (newparser.parseGetnPost()) {
     if (newparser.getMethod() == "CONNECT") {
       use_connect(newparser, client_fd, id);

@@ -34,8 +34,7 @@ class Socket {
     status = getaddrinfo(hostname, port, &host_info, &host_info_list);
 
     if (status != 0) {
-      std::cerr << "Error: cannot get address info for host" << std::endl;
-      std::cerr << "  (" << hostname << "," << port << ")" << std::endl;
+      throw std::runtime_error("Cannot get address info for host");
       // return -1;
     }  //if
 
@@ -43,9 +42,7 @@ class Socket {
                        host_info_list->ai_socktype,
                        host_info_list->ai_protocol);
     if (socket_fd == -1) {
-      std::cerr << "Error: cannot create socket" << std::endl;
-      std::cerr << "  (" << hostname << "," << port << ")" << std::endl;
-      // return -1;
+      throw std::runtime_error("Cannot create socket");
     }  //if
   }
 
@@ -55,16 +52,12 @@ class Socket {
     status = setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
     status = bind(socket_fd, host_info_list->ai_addr, host_info_list->ai_addrlen);
     if (status == -1) {
-      std::cerr << "Error: cannot bind socket" << std::endl;
-      std::cerr << "  (" << hostname << "," << port << ")" << std::endl;
-      return -1;
+      throw std::runtime_error("Unable to bind socket");
     }  //if
 
     status = listen(socket_fd, 100);
     if (status == -1) {
-      std::cerr << "Error: cannot listen on socket" << std::endl;
-      std::cerr << "  (" << hostname << "," << port << ")" << std::endl;
-      return -1;
+      throw std::runtime_error("Cannot listen on socket");
     }  //if
 
     std::cout << "Waiting for connection on port " << port << std::endl;
@@ -88,7 +81,7 @@ class Socket {
     client_connection_fd =
         accept(socket_fd, (struct sockaddr *)&socket_addr, &socket_addr_len);
     if (client_connection_fd == -1) {
-      std::cerr << "Error: cannot accept connection on socket" << std::endl;
+      throw std::runtime_error("Cannot accept client connection");
       // return -1;
     }
     std::pair<int, std::string> result =
@@ -111,8 +104,7 @@ class Socket {
 
     status = connect(socket_fd, host_info_list->ai_addr, host_info_list->ai_addrlen);
     if (status == -1) {
-      std::cerr << "Error: cannot connect to socket" << std::endl;
-      std::cerr << "  (" << hostname << "," << port << ")" << std::endl;
+      throw std::runtime_error("Cannot connect to server");
     }
   }
 
