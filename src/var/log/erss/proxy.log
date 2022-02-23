@@ -1,0 +1,24 @@
+0: GET http://detectportal.firefox.com/success.txt?ipv4 HTTP/1.1 from 172.19.0.1@Wed Feb 23 20:34:59 2022
+1: GET http://detectportal.firefox.com/success.txt?ipv6 HTTP/1.1 from 172.19.0.1@Wed Feb 23 20:34:59 2022
+2: GET http://detectportal.firefox.com/canonical.html HTTP/1.1 from 172.19.0.1@Wed Feb 23 20:34:59 2022
+2: Requesting GET http://detectportal.firefox.com/canonical.html HTTP/1.1 from detectportal.firefox.com
+0: Requesting GET http://detectportal.firefox.com/success.txt?ipv4 HTTP/1.1 from detectportal.firefox.com
+1: Requesting GET http://detectportal.firefox.com/success.txt?ipv6 HTTP/1.1 from detectportal.firefox.com
+0: Received HTTP/1.1 200 OK from detectportal.firefox.com
+0: not in cache
+0: cached, expires at Wed Feb 23 20:34:59 2022
+1: Received HTTP/1.1 200 OK from detectportal.firefox.com
+1: not in cache
+1: cached, expires at Wed Feb 23 20:34:59 2022
+2: Received HTTP/1.1 200 OK from detectportal.firefox.com
+2: not in cache
+2: cached, expires at Wed Feb 23 20:34:59 2022
+3: CONNECT mozilla.cloudflare-dns.com:443 HTTP/1.1 from 172.19.0.1@Wed Feb 23 20:34:59 2022
+4: POST http://ocsp.digicert.com/ HTTP/1.1 from 172.19.0.1@Wed Feb 23 20:34:59 2022
+4: Requesting POST http://ocsp.digicert.com/ HTTP/1.1 from ocsp.digicert.com
+4: Received HTTP/1.1 200 OK from ocsp.digicert.com
+5: GET http://www.example.com/ HTTP/1.1 from 172.19.0.1@Wed Feb 23 20:35:03 2022
+5: Requesting GET http://www.example.com/ HTTP/1.1 from www.example.com
+5: Received HTTP/1.1 200 OK from www.example.com
+5: not in cache
+5: cached, expires at Wed Mar  2 20:35:03 2022
