@@ -36,3 +36,6 @@ Our solution: check the number of bytes received, if it's 0, we will not try to 
 9. Error when opening file 
 Log file may fail to open, which makes the subsequent action with log impossible
 Our Solution: use is_open to detect if the log file being opened, if not, we will throw an exception which will be caught by the code which called log and retry
+
+##########Caching Policy##########
+Map can only contain a maximum of 100 cached response. Once the cache size is exceeded, a random cached entry will be deleted to make room for the new entry.  We check the expiration state of the cached response when the same url has been requested, if the response has expired, we revalidate and update the response.
