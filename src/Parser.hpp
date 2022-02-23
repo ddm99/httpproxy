@@ -35,6 +35,9 @@ class Parser {
     size_t skip = message.find("http://") + 7;
     size_t start = message.find("/", skip);
     size_t finish = message.find(" ", start);
+    if((start == std::string::npos)||(finish == std::string::npos)){
+      throw std::invalid_argument("Cannot Parse Request\n");
+    }
     parsed_message->pathname = message.substr(start, finish - start);
     // std::cout << parsed_message->pathname << std::endl;
   }
@@ -48,6 +51,9 @@ class Parser {
     }
     else {
       finish = message.find("\r\n", start);
+    }
+    if((start == std::string::npos)||(finish == std::string::npos)){
+      throw std::invalid_argument("Cannot Parse Request\n");
     }
     parsed_message->hostname = message.substr(start, finish - start);
     //std::cout << parsed_message->hostname << std::endl;
@@ -64,11 +70,13 @@ class Parser {
 
   //Wrapper function for parsing user's request
   bool parseGetnPost() {
+    try{
     parse_method();
     parse_hostname();
     parse_pathname();
     parsed_message->url = parsed_message->hostname + parsed_message->pathname;
-    if (parsed_message->hostname.find("mozilla") != std::string::npos) {
+    }catch (std::invalid_argument & e){
+      std::cout<<e.what()<<std::endl;
       return false;
     }
     return true;

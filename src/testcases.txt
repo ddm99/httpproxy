@@ -1,0 +1,73 @@
+GET:
+http://example.com
+first time request:
+21: GET http://www.example.com/ HTTP/1.1 from 127.0.0.1@Wed Feb 23 18:55:39 2022
+21: Requesting GET http://www.example.com/ HTTP/1.1 from www.example.com
+21: Received HTTP/1.1 200 OK from www.example.com
+21: not in cache
+21: cached, expires at Wed Mar  2 18:55:39 2022
+second time request:
+23: GET http://www.example.com/ HTTP/1.1 from 127.0.0.1@Wed Feb 23 18:55:41 2022
+23: in cache, valid
+
+http://rabihyounes.com/awesome.txt
+55: GET http://rabihyounes.com/awesome.txt HTTP/1.1 from 127.0.0.1@Wed Feb 23 18:55:55 2022
+55: Requesting GET http://rabihyounes.com/awesome.txt HTTP/1.1 from rabihyounes.com
+55: Received HTTP/1.1 200 OK from rabihyounes.com
+55: not in cache
+55: cached, expires at Thu Feb 24 00:55:56 2022
+
+Chuncked Transmission:
+http://www.httpwatch.com/httpgallery/chunked/chunkedimage.aspx
+first time request:
+72: GET http://www.httpwatch.com/httpgallery/chunked/chunkedimage.aspx HTTP/1.1 from 127.0.0.1@Wed Feb 23 18:56:31 2022
+72: Requesting GET http://www.httpwatch.com/httpgallery/chunked/chunkedimage.aspx HTTP/1.1 from www.httpwatch.com
+72: Received HTTP/1.1 200 OK from www.httpwatch.com
+72: not in cache
+72: cached, expires at Wed Feb 23 18:56:36 2022
+second time request:
+75: GET http://www.httpwatch.com/httpgallery/chunked/chunkedimage.aspx HTTP/1.1 from 127.0.0.1@Wed Feb 23 18:56:39 2022
+75: in cache, valid
+
+POST:
+http://httpbin.org/forms/post
+0: POST http://httpbin.org/post HTTP/1.1 from 127.0.0.1@Wed Feb 23 19:04:04 2022
+0: Requesting POST http://httpbin.org/post HTTP/1.1 from httpbin.org
+0: Received HTTP/1.1 200 OK from httpbin.org
+
+CONNECT:
+https://www.youtube.com/
+1: CONNECT youtube.com:443 HTTP/1.1 from 127.0.0.1@Wed Feb 23 19:04:51 2022
+2: CONNECT www.youtube.com:443 HTTP/1.1 from 127.0.0.1@Wed Feb 23 19:04:51 2022
+3: CONNECT i.ytimg.com:443 HTTP/1.1 from 127.0.0.1@Wed Feb 23 19:04:52 2022
+4: CONNECT fonts.googleapis.com:443 HTTP/1.1 from 127.0.0.1@Wed Feb 23 19:04:52 2022
+5: CONNECT fonts.gstatic.com:443 HTTP/1.1 from 127.0.0.1@Wed Feb 23 19:04:53 2022
+6: CONNECT googleads.g.doubleclick.net:443 HTTP/1.1 from 127.0.0.1@Wed Feb 23 19:04:54 2022
+7: CONNECT www.gstatic.com:443 HTTP/1.1 from 127.0.0.1@Wed Feb 23 19:04:55 2022
+8: CONNECT mozilla.cloudflare-dns.com:443 HTTP/1.1 from 127.0.0.1@Wed Feb 23 19:04:55 2022
+9: CONNECT www.google.com:443 HTTP/1.1 from 127.0.0.1@Wed Feb 23 19:04:55 2022
+10: CONNECT yt3.ggpht.com:443 HTTP/1.1 from 127.0.0.1@Wed Feb 23 19:04:55 2022
+11: CONNECT static.doubleclick.net:443 HTTP/1.1 from 127.0.0.1@Wed Feb 23 19:04:56 2022
+
+https://sakai.duke.edu/
+12: CONNECT sakai.duke.edu:443 HTTP/1.1 from 127.0.0.1@Wed Feb 23 19:05:33 2022
+13: CONNECT shib.oit.duke.edu:443 HTTP/1.1 from 127.0.0.1@Wed Feb 23 19:05:34 2022
+14: POST http://ocsp.usertrust.com/ HTTP/1.1 from 127.0.0.1@Wed Feb 23 19:05:34 2022
+14: Requesting POST http://ocsp.usertrust.com/ HTTP/1.1 from ocsp.usertrust.com
+14: Received HTTP/1.1 200 OK from ocsp.usertrust.com
+15: CONNECT shib.oit.duke.edu:443 HTTP/1.1 from 127.0.0.1@Wed Feb 23 19:05:34 2022
+17: CONNECT shib.oit.duke.edu:443 HTTP/1.1 from 127.0.0.1@Wed Feb 23 19:05:35 2022
+16: CONNECT shib.oit.duke.edu:443 HTTP/1.1 from 127.0.0.1@Wed Feb 23 19:05:35 2022
+18: CONNECT shib.oit.duke.edu:443 HTTP/1.1 from 127.0.0.1@Wed Feb 23 19:05:35 2022
+20: CONNECT beacon.oit.duke.edu:443 HTTP/1.1 from 127.0.0.1@Wed Feb 23 19:05:35 2022
+21: CONNECT getpocket.cdn.mozilla.net:443 HTTP/1.1 from 127.0.0.1@Wed Feb 23 19:05:35 2022
+22: CONNECT beacon.oit.duke.edu:443 HTTP/1.1 from 127.0.0.1@Wed Feb 23 19:05:36 2022
+23: POST http://ocsp.usertrust.com/ HTTP/1.1 from 127.0.0.1@Wed Feb 23 19:05:36 2022
+23: Requesting POST http://ocsp.usertrust.com/ HTTP/1.1 from ocsp.usertrust.com
+23: Received HTTP/1.1 200 OK from ocsp.usertrust.com
+24: CONNECT via.oit.duke.edu:443 HTTP/1.1 from 127.0.0.1@Wed Feb 23 19:05:38 2022
+13: Tunnel closed
+15: Tunnel closed
+17: Tunnel closed
+16: Tunnel closed
+18: Tunnel closed
